@@ -3,6 +3,7 @@ package com.example.spygame
 import android.content.Context
 import android.content.res.Configuration
 import android.os.Bundle
+import android.widget.ImageButton
 import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -11,10 +12,13 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Add
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.MailOutline
-import androidx.compose.material.icons.filled.Person
+import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.outlined.List
+import androidx.compose.material.icons.outlined.Settings
+import androidx.compose.material.icons.rounded.List
+import androidx.compose.material.icons.rounded.Settings
+import androidx.compose.material.icons.twotone.List
+import androidx.compose.material.icons.twotone.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -251,6 +255,72 @@ fun RegisterScreen(context: Context) {
                     text = "LOG IN"
                 )
             }
+
+        }
+    }
+}
+
+@Preview
+@Composable
+fun MainScreen() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+
+        Spacer(modifier = Modifier.height(100.dp))
+
+        Button(
+            onClick = { /*TODO*/ },
+            modifier = Modifier
+                .height(125.dp)
+                .fillMaxWidth()
+                .padding(bottom = 10.dp, top = 10.dp)
+        ) {
+            Text(
+                text = "JOIN",
+                fontSize = 70.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Button(
+            onClick = { /*TODO*/ },
+            modifier = Modifier
+                .height(125.dp)
+                .fillMaxWidth()
+                .padding(bottom = 10.dp, top = 10.dp)
+        ) {
+            Text(
+                text = "HOST",
+                fontSize = 70.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            IconButton(
+                onClick = { /*TODO*/ }
+            ) {
+                Icon(Icons.Outlined.List, contentDescription = "leaderboard", modifier = Modifier.size(50.dp))
+            }
+
+            Spacer(modifier = Modifier.width(50.dp))
+
+            IconButton(
+                onClick = { /*TODO*/ }
+            ) {
+                Icon(Icons.Outlined.Settings, contentDescription = "settings", modifier = Modifier.size(50.dp))
+            }
+
 
         }
     }
