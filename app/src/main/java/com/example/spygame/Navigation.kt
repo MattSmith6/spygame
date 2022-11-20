@@ -40,7 +40,7 @@ fun Navigation() {
         composable(
             route = Screen.MenuScreen.route,
             arguments = listOf(
-                navArgument("usernmae") {
+                navArgument("username") {
                     type = NavType.StringType
                     defaultValue = "default_user"
                 }
@@ -63,7 +63,7 @@ fun LoginScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.sgtemplogo),
+            painter = painterResource(id = R.drawable.sg_logo),
             contentDescription = "Spy Game Logo",
             modifier = Modifier
                 .fillMaxWidth()
@@ -157,7 +157,7 @@ fun RegisterScreen(navController: NavController) {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         Image(
-            painter = painterResource(id = R.drawable.sgtemplogo),
+            painter = painterResource(id = R.drawable.sg_logo),
             contentDescription = "Spy Game Logo",
             modifier = Modifier
                 .fillMaxWidth()
@@ -309,6 +309,51 @@ fun MenuScreen() {
             ) {
                 Icon(Icons.Outlined.Settings, contentDescription = "settings", modifier = Modifier.size(50.dp))
             }
+        }
+    }
+}
+@Preview
+@Composable
+fun InterfaceScreen() {
+    var isPlayerNearby: Boolean = true //Returns true if a player is within the range of 15 feet
+    var playerName: String = "default_name" //The name of the nearest player
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        if (isPlayerNearby) {
+            Text(text = "Player $playerName is within range!", fontSize = 20.sp) //This can also just say "A player is within range"
+            Image(
+                painter = painterResource(id = R.drawable.player_near_icon),
+                contentDescription = "Nobody Nearby",
+                modifier = Modifier
+                    .size(500.dp)
+            )
+            //ELIMINATE button appears only if a player is nearby
+            Button(
+                onClick = { /*TO DO */ }, //Eliminates Player $playerName from game and rewards a point/s
+                modifier = Modifier
+                    .height(100.dp)
+                    .fillMaxWidth()
+                    .padding(bottom = 10.dp, top = 10.dp)
+            ) {
+                Text(
+                    text = "ELIMINATE",
+                    fontSize = 50.sp,
+                    textAlign = TextAlign.Center
+                )
+            }
+        } else {
+            Text(text = "No players nearby. Keep searching.", fontSize = 20.sp)
+            Image(
+                painter = painterResource(id = R.drawable.nobody_near_icon),
+                contentDescription = "Nobody Nearby",
+                modifier = Modifier
+                    .size(500.dp)
+            )
         }
     }
 }
