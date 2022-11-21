@@ -5,6 +5,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Email
 import androidx.compose.material.icons.filled.Info
 import androidx.compose.material.icons.filled.MailOutline
 import androidx.compose.material.icons.filled.Person
@@ -19,6 +20,7 @@ import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
+import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
@@ -37,17 +39,24 @@ fun Navigation() {
         composable(route = Screen.LoginScreen.route) {
             LoginScreen(navController = navController)
         }
-        composable(
-            route = Screen.MenuScreen.route,
-            arguments = listOf(
-                navArgument("username") {
-                    type = NavType.StringType
-                    defaultValue = "default_user"
-                }
-            )
-        ) {
-
+        composable(route = Screen.RegisterScreen.route) {
+            RegisterScreen(navController = navController)
         }
+        //Here I attempted the implementation of passing the username,
+        //but I'm still learning more on how to do it, so its commented out right now
+        /*********************************
+        composable(
+        route = Screen.MenuScreen.route,
+        arguments = listOf(
+        navArgument("username") {
+        type = NavType.StringType
+        defaultValue = "default_user"
+        }
+        )
+        ) { entry ->
+        MenuScreen(username = entry.arguments?.getString("username"))
+        }
+         *********************************/
     }
 }
 
@@ -62,56 +71,16 @@ fun LoginScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.sg_logo),
-            contentDescription = "Spy Game Logo",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp)
-        )
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = "LOGIN",
-            fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.LightGray,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 20.dp)
-        )
-
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text(text = "Enter Username") },
-            leadingIcon = {
-                Icon(Icons.Default.Person, contentDescription = "username")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp)
-        )
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text(text = "Enter Password") },
-            leadingIcon = {
-                Icon(Icons.Default.Info, contentDescription = "password")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
-        )
+        LogoHeader(pageName = "LOG IN")
+        LoginFields(
+            username = username,
+            password = password,
+            onUsernameChange = { username = it },
+            onPasswordChange = { password = it })
 
         OutlinedButton(
-            onClick = { /*TO DO*/ },
+            onClick = { /*Checks account details. If valid then switches to menu screen, if not then prompts to try again*/ },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp, top = 10.dp)
@@ -134,7 +103,7 @@ fun LoginScreen(navController: NavController) {
                 textAlign = TextAlign.Center
             )
 
-            TextButton(onClick = { navController.navigate(Screen.RegistrationScreen.route) }) {
+            TextButton(onClick = { navController.navigate(Screen.RegisterScreen.route) }) { //Switches to RegisterScreen
                 Text(
                     text = "REGISTER"
                 )
@@ -156,68 +125,19 @@ fun RegisterScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-        Image(
-            painter = painterResource(id = R.drawable.sg_logo),
-            contentDescription = "Spy Game Logo",
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 10.dp)
-        )
 
-        Spacer(modifier = Modifier.height(20.dp))
-
-        Text(
-            text = "SIGN UP",
-            fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold,
-            color = Color.LightGray,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 20.dp)
-        )
-
-        OutlinedTextField(
-            value = email,
-            onValueChange = { email = it },
-            label = { Text(text = "Enter CSUN E-Mail") },
-            leadingIcon = {
-                Icon(Icons.Default.MailOutline, contentDescription = "email")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp)
-        )
-
-        OutlinedTextField(
-            value = username,
-            onValueChange = { username = it },
-            label = { Text(text = "Enter Username") },
-            leadingIcon = {
-                Icon(Icons.Default.Person, contentDescription = "username")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp)
-        )
-
-        OutlinedTextField(
-            value = password,
-            onValueChange = { password = it },
-            label = { Text(text = "Enter Password") },
-            leadingIcon = {
-                Icon(Icons.Default.Info, contentDescription = "password")
-            },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp),
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+        LogoHeader(pageName = "SIGN UP")
+        RegisterFields(
+            email = email,
+            username = username,
+            password = password,
+            onEmailChange = { email = it },
+            onUsernameChange = { username = it },
+            onPasswordChange = { password = it}
         )
 
         OutlinedButton(
-            onClick = { /*TO DO */ },
+            onClick = { /*Checks if csun.edu and checks if account details don't exist then creates account*/ },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp, top = 10.dp)
@@ -240,7 +160,7 @@ fun RegisterScreen(navController: NavController) {
                 textAlign = TextAlign.Center
             )
 
-            TextButton(onClick = { navController.navigate(Screen.LoginScreen.route) }) {
+            TextButton(onClick = { navController.navigate(Screen.LoginScreen.route) }) { //Switches to LoginScreen
                 Text(
                     text = "LOG IN"
                 )
@@ -249,7 +169,6 @@ fun RegisterScreen(navController: NavController) {
     }
 }
 
-@Preview
 @Composable
 fun MenuScreen() {
     Column(
@@ -263,9 +182,9 @@ fun MenuScreen() {
         Spacer(modifier = Modifier.height(100.dp))
 
         Button(
-            onClick = { /*TODO*/ },
+            onClick = { /*Prompts player to input a join code*/ },
             modifier = Modifier
-                .height(125.dp)
+                .height(125.dp)  
                 .fillMaxWidth()
                 .padding(bottom = 10.dp, top = 10.dp)
         ) {
@@ -277,7 +196,7 @@ fun MenuScreen() {
         }
 
         Button(
-            onClick = { /*TODO*/ },
+            onClick = { /*Switches to CreateGameScreen*/ },
             modifier = Modifier
                 .height(125.dp)
                 .fillMaxWidth()
@@ -297,21 +216,30 @@ fun MenuScreen() {
             horizontalArrangement = Arrangement.Center
         ) {
             IconButton(
-                onClick = { /*TODO*/ }
+                onClick = { /*Switches to LeaderboardScreen*/ }
             ) {
-                Icon(Icons.Outlined.List, contentDescription = "leaderboard", modifier = Modifier.size(50.dp))
+                Icon(
+                    Icons.Outlined.List,
+                    contentDescription = "leaderboard",
+                    modifier = Modifier.size(50.dp)
+                )
             }
 
             Spacer(modifier = Modifier.width(50.dp))
 
             IconButton(
-                onClick = { /*TODO*/ }
+                onClick = { /*Switches to SettingsScreen*/ }
             ) {
-                Icon(Icons.Outlined.Settings, contentDescription = "settings", modifier = Modifier.size(50.dp))
+                Icon(
+                    Icons.Outlined.Settings,
+                    contentDescription = "settings",
+                    modifier = Modifier.size(50.dp)
+                )
             }
         }
     }
 }
+
 @Preview
 @Composable
 fun InterfaceScreen() {
@@ -325,7 +253,10 @@ fun InterfaceScreen() {
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
         if (isPlayerNearby) {
-            Text(text = "Player $playerName is within range!", fontSize = 20.sp) //This can also just say "A player is within range"
+            Text(
+                text = "Player $playerName is within range!",
+                fontSize = 20.sp
+            ) //This can also just say "A player is within range"
             Image(
                 painter = painterResource(id = R.drawable.player_near_icon),
                 contentDescription = "Nobody Nearby",
@@ -334,7 +265,7 @@ fun InterfaceScreen() {
             )
             //ELIMINATE button appears only if a player is nearby
             Button(
-                onClick = { /*TO DO */ }, //Eliminates Player $playerName from game and rewards a point/s
+                onClick = { /*Eliminates Player $playerName from game and rewards a point*/ },
                 modifier = Modifier
                     .height(100.dp)
                     .fillMaxWidth()
@@ -356,4 +287,121 @@ fun InterfaceScreen() {
             )
         }
     }
+}
+
+@Composable
+fun LogoHeader(pageName: String) {
+    Image(
+        painter = painterResource(id = R.drawable.sg_logo),
+        contentDescription = "Spy Game Logo",
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(top = 10.dp)
+    )
+
+    Spacer(modifier = Modifier.height(20.dp))
+
+    Text(
+        text = pageName,
+        fontFamily = FontFamily.Monospace,
+        textAlign = TextAlign.Center,
+        fontSize = 30.sp,
+        fontWeight = FontWeight.Bold,
+        color = Color.LightGray,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 20.dp)
+    )
+}
+
+@Composable
+fun LoginFields(
+    username: String,
+    password: String,
+    onUsernameChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit
+) {
+    TxtField(
+        value = username,
+        label = "Username",
+        placeholder = "Enter Username",
+        onValueChange = onUsernameChange,
+        leadingIcon = {
+            Icon(Icons.Default.Person, contentDescription = "username")
+        }
+    )
+    TxtField(
+        value = password,
+        label = "Password",
+        placeholder = "Enter Password",
+        onValueChange = onPasswordChange,
+        visualTransformation = PasswordVisualTransformation(),
+        leadingIcon = {
+            Icon(Icons.Default.Info, contentDescription = "password")
+        }
+    )
+}
+
+@Composable
+fun RegisterFields(
+    email: String,
+    username: String,
+    password: String,
+    onEmailChange: (String) -> Unit,
+    onUsernameChange: (String) -> Unit,
+    onPasswordChange: (String) -> Unit
+) {
+    TxtField(
+        value = email,
+        label = "E-Mail",
+        placeholder = "Enter E-Mail",
+        onValueChange = onEmailChange,
+        leadingIcon = {
+            Icon(Icons.Default.Email, contentDescription = "email")
+        }
+    )
+    TxtField(
+        value = username,
+        label = "Username",
+        placeholder = "Enter Username",
+        onValueChange = onUsernameChange,
+        leadingIcon = {
+            Icon(Icons.Default.Person, contentDescription = "username")
+        }
+    )
+    TxtField(
+        value = password,
+        label = "Password",
+        placeholder = "Enter Password",
+        onValueChange = onPasswordChange,
+        visualTransformation = PasswordVisualTransformation(),
+        leadingIcon = {
+            Icon(Icons.Default.Info, contentDescription = "password")
+        }
+    )
+
+}
+
+@Composable
+fun TxtField(
+    value: String,
+    label: String,
+    placeholder: String,
+    visualTransformation: VisualTransformation = VisualTransformation.None,
+    keyboardOptions: KeyboardOptions = KeyboardOptions.Default,
+    leadingIcon: @Composable (() -> Unit)? = null,
+    onValueChange: (String) -> Unit
+) {
+    OutlinedTextField(
+        value = value,
+        onValueChange = onValueChange,
+        label = { Text(text = label) },
+        placeholder = { Text(text = placeholder) },
+        leadingIcon = leadingIcon,
+        visualTransformation = visualTransformation,
+        keyboardOptions = keyboardOptions,
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp, top = 10.dp)
+    )
 }
