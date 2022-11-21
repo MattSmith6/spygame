@@ -18,6 +18,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -77,39 +78,16 @@ fun LoginScreen(navController: NavController) {
             username = username,
             password = password,
             onUsernameChange = { username = it },
-            onPasswordChange = { password = it })
-
-        OutlinedButton(
-            onClick = { /*Checks account details. If valid then switches to menu screen, if not then prompts to try again*/ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp)
-        ) {
-            Text(
-                text = "Login",
-                textAlign = TextAlign.Center
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Don't have an account?",
-                textAlign = TextAlign.Center
-            )
-
-            TextButton(onClick = { navController.navigate(Screen.RegisterScreen.route) }) { //Switches to RegisterScreen
-                Text(
-                    text = "REGISTER"
-                )
-            }
-
-        }
+            onPasswordChange = { password = it },
+            onForgotPassClick = {/*Switches to forgot password screen */}
+        )
+        LoginRegisterFooter(
+            mainButtonTxt = "LOG IN",
+            onMainButtonClick = { /*Checks account details, if wrong then prompts to try again, if not then goes to MenuScreen()*/ },
+            switchScreenTxt = "Don't have an account?",
+            onSwitchScreenClick = { navController.navigate(Screen.RegisterScreen.route) },
+            switchScreenTxtButton = "REGISTER"
+        )
     }
 }
 
@@ -125,7 +103,6 @@ fun RegisterScreen(navController: NavController) {
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
-
         LogoHeader(pageName = "SIGN UP")
         RegisterFields(
             email = email,
@@ -133,39 +110,15 @@ fun RegisterScreen(navController: NavController) {
             password = password,
             onEmailChange = { email = it },
             onUsernameChange = { username = it },
-            onPasswordChange = { password = it}
+            onPasswordChange = { password = it }
         )
-
-        OutlinedButton(
-            onClick = { /*Checks if csun.edu and checks if account details don't exist then creates account*/ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp)
-        ) {
-            Text(
-                text = "Create Account",
-                textAlign = TextAlign.Center
-            )
-        }
-
-        Row(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(20.dp),
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.Center
-        ) {
-            Text(
-                text = "Already have an account?",
-                textAlign = TextAlign.Center
-            )
-
-            TextButton(onClick = { navController.navigate(Screen.LoginScreen.route) }) { //Switches to LoginScreen
-                Text(
-                    text = "LOG IN"
-                )
-            }
-        }
+        LoginRegisterFooter(
+            mainButtonTxt = "CREATE ACCOUNT",
+            onMainButtonClick = { /*Checks if csun.edu and checks if account details don't exist then creates account*/ },
+            switchScreenTxt = "Already have an account?",
+            onSwitchScreenClick = { navController.navigate(Screen.LoginScreen.route) },
+            switchScreenTxtButton = "LOG IN"
+        )
     }
 }
 
@@ -184,7 +137,7 @@ fun MenuScreen() {
         Button(
             onClick = { /*Prompts player to input a join code*/ },
             modifier = Modifier
-                .height(125.dp)  
+                .height(125.dp)
                 .fillMaxWidth()
                 .padding(bottom = 10.dp, top = 10.dp)
         ) {
@@ -315,11 +268,54 @@ fun LogoHeader(pageName: String) {
 }
 
 @Composable
-fun LoginFields(
+fun LoginRegisterFooter(
+    mainButtonTxt: String,
+    onMainButtonClick: () -> Unit,
+    switchScreenTxt: String,
+    onSwitchScreenClick: () -> Unit,
+    switchScreenTxtButton: String
+) {
+    Column {
+        OutlinedButton(
+            onClick =  onMainButtonClick,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp, top = 10.dp)
+        ) {
+            Text(
+                text = mainButtonTxt,
+                textAlign = TextAlign.Center
+            )
+        }
+
+        Row(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(20.dp),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.Center
+        ) {
+            Text(
+                text = switchScreenTxt,
+                textAlign = TextAlign.Center
+            )
+
+            TextButton(onClick = onSwitchScreenClick) { //Switches to LoginScreen
+                Text(
+                    text = switchScreenTxtButton
+                )
+            }
+        }
+    }
+}
+
+@Composable
+fun ColumnScope.LoginFields(
     username: String,
     password: String,
     onUsernameChange: (String) -> Unit,
-    onPasswordChange: (String) -> Unit
+    onPasswordChange: (String) -> Unit,
+    onForgotPassClick: () -> Unit
 ) {
     TxtField(
         value = username,
@@ -328,7 +324,8 @@ fun LoginFields(
         onValueChange = onUsernameChange,
         leadingIcon = {
             Icon(Icons.Default.Person, contentDescription = "username")
-        }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next)
     )
     TxtField(
         value = password,
@@ -338,8 +335,16 @@ fun LoginFields(
         visualTransformation = PasswordVisualTransformation(),
         leadingIcon = {
             Icon(Icons.Default.Info, contentDescription = "password")
-        }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go)
     )
+
+    TextButton(
+        onClick = onForgotPassClick,
+        modifier = Modifier.align(Alignment.End)
+    ) {
+        Text(text = "Forgot Password?", fontSize = 12.sp)
+    }
 }
 
 @Composable
@@ -358,7 +363,8 @@ fun RegisterFields(
         onValueChange = onEmailChange,
         leadingIcon = {
             Icon(Icons.Default.Email, contentDescription = "email")
-        }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
     )
     TxtField(
         value = username,
@@ -367,7 +373,8 @@ fun RegisterFields(
         onValueChange = onUsernameChange,
         leadingIcon = {
             Icon(Icons.Default.Person, contentDescription = "username")
-        }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next)
     )
     TxtField(
         value = password,
@@ -377,7 +384,8 @@ fun RegisterFields(
         visualTransformation = PasswordVisualTransformation(),
         leadingIcon = {
             Icon(Icons.Default.Info, contentDescription = "password")
-        }
+        },
+        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go)
     )
 
 }
