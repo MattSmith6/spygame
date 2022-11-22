@@ -1,6 +1,7 @@
 package com.example.spygame
 
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
@@ -79,7 +80,7 @@ fun LoginScreen(navController: NavController) {
             password = password,
             onUsernameChange = { username = it },
             onPasswordChange = { password = it },
-            onForgotPassClick = {/*Switches to forgot password screen */}
+            onForgotPassClick = {/*Switches to forgot password screen */ }
         )
         LoginRegisterFooter(
             mainButtonTxt = "LOG IN",
@@ -134,33 +135,15 @@ fun MenuScreen() {
 
         Spacer(modifier = Modifier.height(100.dp))
 
-        Button(
-            onClick = { /*Prompts player to input a join code*/ },
-            modifier = Modifier
-                .height(125.dp)
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp)
-        ) {
-            Text(
-                text = "JOIN",
-                fontSize = 70.sp,
-                textAlign = TextAlign.Center
-            )
-        }
+        MenuButton( //Lets the player join an existing game
+            text = "JOIN",
+            onMenuButtonClick =  {/*Prompts for join code*/}
+        )
 
-        Button(
-            onClick = { /*Switches to CreateGameScreen*/ },
-            modifier = Modifier
-                .height(125.dp)
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp)
-        ) {
-            Text(
-                text = "HOST",
-                fontSize = 70.sp,
-                textAlign = TextAlign.Center
-            )
-        }
+        MenuButton( //Lets the player create their own game and invite
+            text = "HOST",
+            onMenuButtonClick =  {/*Switches to CreateGameScreen*/}
+        )
         Row(
             modifier = Modifier
                 .fillMaxSize()
@@ -207,9 +190,9 @@ fun InterfaceScreen() {
     ) {
         if (isPlayerNearby) {
             Text(
-                text = "Player $playerName is within range!",
+                text = "Player $playerName is within range!", //This can also just say "A player is within range"
                 fontSize = 20.sp
-            ) //This can also just say "A player is within range"
+            )
             Image(
                 painter = painterResource(id = R.drawable.player_near_icon),
                 contentDescription = "Nobody Nearby",
@@ -239,6 +222,23 @@ fun InterfaceScreen() {
                     .size(500.dp)
             )
         }
+    }
+}
+
+@Preview
+@Composable
+fun LobbyScreen() {
+    Column(
+        modifier = Modifier.fillMaxSize(),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        Box(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(top = 15.dp)
+                .background(color = Color.DarkGray)
+        )
     }
 }
 
@@ -277,7 +277,7 @@ fun LoginRegisterFooter(
 ) {
     Column {
         OutlinedButton(
-            onClick =  onMainButtonClick,
+            onClick = onMainButtonClick,
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp, top = 10.dp)
@@ -325,7 +325,10 @@ fun ColumnScope.LoginFields(
         leadingIcon = {
             Icon(Icons.Default.Person, contentDescription = "username")
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next)
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Next
+        )
     )
     TxtField(
         value = password,
@@ -336,7 +339,10 @@ fun ColumnScope.LoginFields(
         leadingIcon = {
             Icon(Icons.Default.Info, contentDescription = "password")
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go)
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Go
+        )
     )
 
     TextButton(
@@ -364,7 +370,10 @@ fun RegisterFields(
         leadingIcon = {
             Icon(Icons.Default.Email, contentDescription = "email")
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Email, imeAction = ImeAction.Next)
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next
+        )
     )
     TxtField(
         value = username,
@@ -374,7 +383,10 @@ fun RegisterFields(
         leadingIcon = {
             Icon(Icons.Default.Person, contentDescription = "username")
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next)
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Next
+        )
     )
     TxtField(
         value = password,
@@ -385,7 +397,10 @@ fun RegisterFields(
         leadingIcon = {
             Icon(Icons.Default.Info, contentDescription = "password")
         },
-        keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password, imeAction = ImeAction.Go)
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Go
+        )
     )
 
 }
@@ -412,4 +427,21 @@ fun TxtField(
             .fillMaxWidth()
             .padding(bottom = 10.dp, top = 10.dp)
     )
+}
+
+@Composable
+fun MenuButton(text: String, onMenuButtonClick: () -> Unit) {
+    Button(
+        onClick = onMenuButtonClick,
+        modifier = Modifier
+            .height(125.dp)
+            .fillMaxWidth()
+            .padding(bottom = 10.dp, top = 10.dp)
+    ) {
+        Text(
+            text = text,
+            fontSize = 70.sp,
+            textAlign = TextAlign.Center
+        )
+    }
 }
