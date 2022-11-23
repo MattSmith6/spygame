@@ -34,6 +34,8 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
 
+var isHost: Boolean = false
+
 @Composable
 fun Navigation() {
     val navController = rememberNavController()
@@ -123,6 +125,7 @@ fun RegisterScreen(navController: NavController) {
     }
 }
 
+//@Preview
 @Composable
 fun MenuScreen() {
     Column(
@@ -137,12 +140,12 @@ fun MenuScreen() {
 
         MenuButton( //Lets the player join an existing game
             text = "JOIN",
-            onMenuButtonClick =  {/*Prompts for join code*/}
+            onMenuButtonClick = {/*Prompts for join code*/ }
         )
 
         MenuButton( //Lets the player create their own game and invite
             text = "HOST",
-            onMenuButtonClick =  {/*Switches to CreateGameScreen*/}
+            onMenuButtonClick = {/*Switches to CreateGameScreen*/ }
         )
         Row(
             modifier = Modifier
@@ -176,7 +179,7 @@ fun MenuScreen() {
     }
 }
 
-@Preview
+//@Preview
 @Composable
 fun InterfaceScreen() {
     var isPlayerNearby: Boolean = true //Returns true if a player is within the range of 15 feet
@@ -225,21 +228,51 @@ fun InterfaceScreen() {
     }
 }
 
-@Preview
+
 @Composable
-fun LobbyScreen() {
+fun LobbyScreen(joinCode: String) {
+    isHost = true
+    /*These will need to be changed. I just placed this data for*/
+    /*testing purposes. The goal of these variables is to display*/
+    /*the joinCode on the top of the page so it can be shared and*/
+    /*it checks if the player isHost so it can display a button to*/
+    /*start the game*/
     Column(
         modifier = Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center,
         horizontalAlignment = Alignment.CenterHorizontally
     ) {
+        Text(
+            text = "Game Lobby",
+            fontFamily = FontFamily.Monospace,
+            textAlign = TextAlign.Center,
+            fontSize = 30.sp,
+            fontWeight = FontWeight.Bold,
+            //color = MaterialTheme.colors.onBackground,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(top = 50.dp)
+        )
+        Text(
+            text = "Join Code: $joinCode", fontFamily = FontFamily.Monospace,
+            textAlign = TextAlign.Center, modifier = Modifier.padding(top = 10.dp)
+        )
         Box(
             modifier = Modifier
                 .fillMaxSize()
-                .padding(top = 15.dp)
-                .background(color = Color.DarkGray)
-        )
+                .padding(top = 50.dp)
+                .background(color = MaterialTheme.colors.onBackground)
+        ) {
+            StartGameButton()
+        }
     }
+}
+
+@Preview
+@Composable
+fun PreviewLobbyScreen() {
+    LobbyScreen(joinCode = "ABCD")
+
 }
 
 @Composable
@@ -442,6 +475,24 @@ fun MenuButton(text: String, onMenuButtonClick: () -> Unit) {
             text = text,
             fontSize = 70.sp,
             textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+fun StartGameButton() {
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.Bottom,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        ExtendedFloatingActionButton(
+            text = { Text(text = "START GAME") },
+            onClick = { /*Checks to see if the minimum amount of players are in the lobby then
+                starts game and switches to InterfaceScreen for all players*/
+            }
         )
     }
 }
