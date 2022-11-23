@@ -82,7 +82,7 @@ fun LoginScreen(navController: NavController) {
             password = password,
             onUsernameChange = { username = it },
             onPasswordChange = { password = it },
-            onForgotPassClick = {/*Switches to forgot password screen */ }
+            onForgotPassClick = { /*Should open forgot password prompt*/ }
         )
         LoginRegisterFooter(
             mainButtonTxt = "LOG IN",
@@ -123,6 +123,50 @@ fun RegisterScreen(navController: NavController) {
             switchScreenTxtButton = "LOG IN"
         )
     }
+}
+
+@Composable
+fun ForgotPasswordPrompt() {
+    var email by remember { mutableStateOf("") }
+    Card(elevation = 10.dp, modifier = Modifier.padding(20.dp)) {
+        Column(
+            modifier = Modifier
+                .fillMaxSize()
+                .padding(10.dp),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(text = "Enter your account email. Link will be sent to reset password.")
+            PasswordPromptField(
+                email = email,
+                onEmailChange = { email = it },
+                onSubmitClick = {/*Checks email, if it exists then sends a reset pw link*/ })
+        }
+    }
+}
+
+@Composable
+fun ForgotPasswordScreen() {
+    var newPassword1 by remember { mutableStateOf("") }
+    var newPassword2 by remember { mutableStateOf("") }
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .padding(20.dp),
+        verticalArrangement = Arrangement.Center,
+        horizontalAlignment = Alignment.CenterHorizontally
+    ) {
+        LogoHeader(pageName = "PASSWORD RESET")
+
+        ForgotPasswordField(
+            firstPassword = newPassword1,
+            secondPassword = newPassword2,
+            onFirstPasswordChange = {newPassword1 = it},
+            onSecondPasswordChange = {newPassword2 = it},
+            onResetClick = {/*both passwords should be the same then set password to newPassword1*/}
+        )
+    }
+
 }
 
 //@Preview
@@ -263,7 +307,10 @@ fun LobbyScreen(joinCode: String) {
                 .padding(top = 50.dp)
                 .background(color = MaterialTheme.colors.onBackground)
         ) {
-            StartGameButton()
+            StartGameButton(onStartButtonClick = { /*Checks to see if the minimum amount of players
+            are in the lobby then starts game and switches to InterfaceScreen for all players*/
+            }
+            )
         }
     }
 }
@@ -387,6 +434,35 @@ fun ColumnScope.LoginFields(
 }
 
 @Composable
+fun ColumnScope.PasswordPromptField(
+    email: String,
+    onEmailChange: (String) -> Unit,
+    onSubmitClick: () -> Unit
+) {
+    TxtField(
+        value = email,
+        label = "E-Mail",
+        placeholder = "Enter E-Mail",
+        onValueChange = onEmailChange,
+        leadingIcon = {
+            Icon(Icons.Default.Email, contentDescription = "email")
+        },
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Next
+        )
+    )
+
+    TextButton(
+        onClick = onSubmitClick,
+        modifier = Modifier.align(Alignment.End)
+    ) {
+        Text(text = "Forgot Password?", fontSize = 12.sp)
+    }
+
+}
+
+@Composable
 fun RegisterFields(
     email: String,
     username: String,
@@ -439,6 +515,51 @@ fun RegisterFields(
 }
 
 @Composable
+fun ForgotPasswordField(
+    firstPassword: String,
+    secondPassword: String,
+    onFirstPasswordChange: (String) -> Unit,
+    onSecondPasswordChange: (String) -> Unit,
+    onResetClick: () -> Unit
+) {
+    Column(modifier = Modifier.fillMaxSize()) { TxtField(
+        value = firstPassword,
+        label = "New Password",
+        placeholder = "Enter New Password",
+        onValueChange = onFirstPasswordChange,
+        visualTransformation = PasswordVisualTransformation(),
+        keyboardOptions = KeyboardOptions(
+            keyboardType = KeyboardType.Password,
+            imeAction = ImeAction.Next
+        )
+    )
+        TxtField(
+            value = secondPassword,
+            label = "Re-enter Password",
+            placeholder = "Re-enter New Password",
+            onValueChange = onSecondPasswordChange,
+            visualTransformation = PasswordVisualTransformation(),
+            keyboardOptions = KeyboardOptions(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Go
+            )
+        )
+
+        OutlinedButton(
+            onClick = { /*TODO*/ }, modifier = Modifier
+                .fillMaxWidth()
+                .padding(bottom = 10.dp, top = 10.dp)
+        ) {
+            Text(
+                text = "Reset Password",
+                textAlign = TextAlign.Center
+            )
+        }
+
+    }
+}
+
+@Composable
 fun TxtField(
     value: String,
     label: String,
@@ -480,7 +601,7 @@ fun MenuButton(text: String, onMenuButtonClick: () -> Unit) {
 }
 
 @Composable
-fun StartGameButton() {
+fun StartGameButton(onStartButtonClick: () -> Unit) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -490,9 +611,7 @@ fun StartGameButton() {
     ) {
         ExtendedFloatingActionButton(
             text = { Text(text = "START GAME") },
-            onClick = { /*Checks to see if the minimum amount of players are in the lobby then
-                starts game and switches to InterfaceScreen for all players*/
-            }
+            onClick = onStartButtonClick
         )
     }
 }
