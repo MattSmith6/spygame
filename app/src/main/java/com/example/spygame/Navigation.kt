@@ -46,21 +46,18 @@ fun Navigation() {
         composable(route = Screen.RegisterScreen.route) {
             RegisterScreen(navController = navController)
         }
-        //Here I attempted the implementation of passing the username,
-        //but I'm still learning more on how to do it, so its commented out right now
-        /*********************************
-        composable(
-        route = Screen.MenuScreen.route,
-        arguments = listOf(
-        navArgument("username") {
-        type = NavType.StringType
-        defaultValue = "default_user"
+        composable(route = Screen.LobbyScreen.route) {
+            LobbyScreen(joinCode = "ABCD", navController = navController)
         }
-        )
-        ) { entry ->
-        MenuScreen(username = entry.arguments?.getString("username"))
+        composable(route = Screen.MenuScreen.route) {
+            MenuScreen(navController = navController)
         }
-         *********************************/
+        composable(route = Screen.InterfaceScreen.route) {
+            InterfaceScreen(navController = navController)
+        }
+        composable(route = Screen.ForgotPasswordScreen.route) {
+            ForgotPasswordScreen(navController = navController)
+        }
     }
 }
 
@@ -82,11 +79,11 @@ fun LoginScreen(navController: NavController) {
             password = password,
             onUsernameChange = { username = it },
             onPasswordChange = { password = it },
-            onForgotPassClick = { /*Should open forgot password prompt*/ }
+            onForgotPassClick = { navController.navigate(Screen.ForgotPasswordScreen.route)/*Should open forgot password prompt*/ }
         )
         LoginRegisterFooter(
             mainButtonTxt = "LOG IN",
-            onMainButtonClick = { /*Checks account details, if wrong then prompts to try again, if not then goes to MenuScreen()*/ },
+            onMainButtonClick = { navController.navigate(Screen.MenuScreen.route)/*Checks account details, if wrong then prompts to try again, if not then goes to MenuScreen()*/ },
             switchScreenTxt = "Don't have an account?",
             onSwitchScreenClick = { navController.navigate(Screen.RegisterScreen.route) },
             switchScreenTxtButton = "REGISTER"
@@ -117,7 +114,7 @@ fun RegisterScreen(navController: NavController) {
         )
         LoginRegisterFooter(
             mainButtonTxt = "CREATE ACCOUNT",
-            onMainButtonClick = { /*Checks if csun.edu and checks if account details don't exist then creates account*/ },
+            onMainButtonClick = { navController.navigate(Screen.MenuScreen.route)/*Checks if csun.edu and checks if account details don't exist then creates account*/ },
             switchScreenTxt = "Already have an account?",
             onSwitchScreenClick = { navController.navigate(Screen.LoginScreen.route) },
             switchScreenTxtButton = "LOG IN"
@@ -146,7 +143,7 @@ fun ForgotPasswordPrompt() {
 }
 
 @Composable
-fun ForgotPasswordScreen() {
+fun ForgotPasswordScreen(navController: NavController) {
     var newPassword1 by remember { mutableStateOf("") }
     var newPassword2 by remember { mutableStateOf("") }
     Column(
@@ -171,7 +168,7 @@ fun ForgotPasswordScreen() {
 
 //@Preview
 @Composable
-fun MenuScreen() {
+fun MenuScreen(navController: NavController) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -184,12 +181,12 @@ fun MenuScreen() {
 
         MenuButton( //Lets the player join an existing game
             text = "JOIN",
-            onMenuButtonClick = {/*Prompts for join code*/ }
+            onMenuButtonClick = {navController.navigate(Screen.LobbyScreen.route)/*Prompts for join code*/ }
         )
 
         MenuButton( //Lets the player create their own game and invite
             text = "HOST",
-            onMenuButtonClick = {/*Switches to CreateGameScreen*/ }
+            onMenuButtonClick = {navController.navigate(Screen.LobbyScreen.route)/*Switches to LobbyScreen*/ }
         )
         Row(
             modifier = Modifier
@@ -225,7 +222,7 @@ fun MenuScreen() {
 
 //@Preview
 @Composable
-fun InterfaceScreen() {
+fun InterfaceScreen(navController: NavController) {
     var isPlayerNearby: Boolean = true //Returns true if a player is within the range of 15 feet
     var playerName: String = "default_name" //The name of the nearest player
     Column(
@@ -274,7 +271,7 @@ fun InterfaceScreen() {
 
 
 @Composable
-fun LobbyScreen(joinCode: String) {
+fun LobbyScreen(joinCode: String, navController: NavController) {
     isHost = true
     /*These will need to be changed. I just placed this data for*/
     /*testing purposes. The goal of these variables is to display*/
@@ -305,21 +302,15 @@ fun LobbyScreen(joinCode: String) {
             modifier = Modifier
                 .fillMaxSize()
                 .padding(top = 50.dp)
-                .background(color = MaterialTheme.colors.onBackground)
+                .background(color = MaterialTheme.colors.onPrimary)
         ) {
-            StartGameButton(onStartButtonClick = { /*Checks to see if the minimum amount of players
+            StartGameButton(onStartButtonClick = { navController.navigate(Screen.InterfaceScreen.route)
+            /*Checks to see if the minimum amount of players
             are in the lobby then starts game and switches to InterfaceScreen for all players*/
             }
             )
         }
     }
-}
-
-@Preview
-@Composable
-fun PreviewLobbyScreen() {
-    LobbyScreen(joinCode = "ABCD")
-
 }
 
 @Composable
