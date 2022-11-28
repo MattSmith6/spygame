@@ -13,10 +13,15 @@ class ServerConnectionHandler {
     private val port: Int = 6532;
 
     private var socket: Socket? = null
+    private var bufferedReader: BufferedReader? = null
+    private var bufferedWriter: BufferedWriter? = null
+
     private val encryptionKey: PlayerEncryptionKey = PlayerEncryptionKey()
 
     fun createServerConnection(): Boolean {
         socket = Socket(hostName, port)
+        bufferedReader = getBufferedReader()
+        bufferedWriter = getBufferedWriter()
 
         if (!isConnectionOpened()) {
             socket = null
@@ -44,6 +49,8 @@ class ServerConnectionHandler {
     }
 
     fun closeConnection() {
+        bufferedReader?.close()
+        bufferedWriter?.close()
         socket?.close()
     }
 

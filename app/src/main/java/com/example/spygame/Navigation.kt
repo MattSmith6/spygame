@@ -126,6 +126,9 @@ fun LoginScreen(navController: NavController) {
 
                     if (playerEncryptionKey.isInitialized()) {
                         navController.navigate(Screen.MenuScreen.route)
+                    } else {
+                        serverConnectionHandler.closeConnection()
+                        // TODO: DISPLAY INVALID LOGIN CREDENTIALS ERROR
                     }
                 }
                       },
