@@ -29,6 +29,9 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
+import com.example.spygame.auth.PlayerEncryptionKey
+import com.example.spygame.packet.PlayerHandshakePacket
+import com.example.spygame.packet.ServerConnectionHandler
 
 @Composable
 fun Navigation() {
@@ -40,7 +43,7 @@ fun Navigation() {
         composable(
             route = Screen.MenuScreen.route,
             arguments = listOf(
-                navArgument("usernmae") {
+                navArgument("username") {
                     type = NavType.StringType
                     defaultValue = "default_user"
                 }
@@ -55,6 +58,9 @@ fun Navigation() {
 fun LoginScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+    val serverConnectionHandler by remember { mutableStateOf(ServerConnectionHandler()) }
+    val playerEncryptionKey by remember { mutableStateOf(PlayerEncryptionKey()) }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -111,7 +117,18 @@ fun LoginScreen(navController: NavController) {
         )
 
         OutlinedButton(
-            onClick = { /*TO DO*/ },
+            onClick = {
+                serverConnectionHandler.createServerConnection()
+
+                if (serverConnectionHandler.isConnectionOpened()) {
+                    val handshakePacket = PlayerHandshakePacket(username, password, playerEncryptionKey)
+                    serverConnectionHandler.sendPacket(handshakePacket)
+
+                    if (playerEncryptionKey.isInitialized()) {
+                        navController.navigate(Screen.MenuScreen.route)
+                    }
+                }
+                      },
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(bottom = 10.dp, top = 10.dp)

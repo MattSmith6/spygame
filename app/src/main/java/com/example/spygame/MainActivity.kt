@@ -44,7 +44,7 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colors.background,
                 ) {
-                    //LoginScreen(applicationContext)
+                    // LoginScreen(applicationContext)
                 }
             }
         }

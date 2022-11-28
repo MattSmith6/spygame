@@ -9,20 +9,29 @@ import java.net.Socket
 
 class ServerConnectionHandler {
 
-    private val socket: Socket = getServerConnection()
+    private val hostName: String = "137.184.180.66";
+    private val port: Int = 6532;
+
+    private var socket: Socket? = null
     private val encryptionKey: PlayerEncryptionKey = PlayerEncryptionKey()
 
-    private fun getServerConnection(): Socket {
-        // TODO: Establish server connection with server credentials once setup
-        return Socket()
+    fun createServerConnection(): Boolean {
+        socket = Socket(hostName, port)
+
+        if (!isConnectionOpened()) {
+            socket = null
+            return false
+        }
+
+        return true
     }
 
     fun isConnectionOpened(): Boolean {
-        return !socket.isClosed && encryptionKey.isInitialized()
+        return socket?.isClosed == true && encryptionKey.isInitialized()
     }
 
     fun sendPacket(packet: AbstractPacket): Boolean {
-        if (socket.isClosed) {
+        if (socket?.isClosed == true) {
             return false
         }
 
@@ -35,15 +44,15 @@ class ServerConnectionHandler {
     }
 
     fun closeConnection() {
-        socket.close()
+        socket?.close()
     }
 
     private fun getBufferedReader(): BufferedReader {
-        return BufferedReader(InputStreamReader(socket.getInputStream()))
+        return BufferedReader(InputStreamReader(socket?.getInputStream()))
     }
 
     private fun getBufferedWriter(): BufferedWriter {
-        return BufferedWriter(OutputStreamWriter(socket.getOutputStream()))
+        return BufferedWriter(OutputStreamWriter(socket?.getOutputStream()))
     }
 
 }
