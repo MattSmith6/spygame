@@ -6,6 +6,7 @@ import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.IOException
+import java.io.PrintWriter
 
 // Use Android studio to convert Java code from server side to Kotlin, remove reference to PacketManager
 abstract class AbstractPacket(private val packetId: Int) {
@@ -15,26 +16,26 @@ abstract class AbstractPacket(private val packetId: Int) {
     }
 
     fun sendPacket(playerEncryptionKey: PlayerEncryptionKey,
-                   bufferedReader: BufferedReader, bufferedWriter: BufferedWriter) {
+                   bufferedReader: BufferedReader, printWriter: PrintWriter) {
         // Send unencrypted packet id for server to read
-        bufferedWriter.write(getPacketId())
+        printWriter.println(getPacketId())
 
         // Process the rest of the packet according to protocol
-        process(playerEncryptionKey, bufferedReader, bufferedWriter)
+        process(playerEncryptionKey, bufferedReader, printWriter)
     }
 
     protected abstract fun process(
         playerEncryptionKey: PlayerEncryptionKey,
-        bufferedReader: BufferedReader, bufferedWriter: BufferedWriter
+        bufferedReader: BufferedReader, printWriter: PrintWriter
     )
 
     @Throws(IOException::class)
     protected fun writeJSONObjectToOutput(
         playerEncryptionKey: PlayerEncryptionKey, jsonObject: JSONObject,
-        bufferedWriter: BufferedWriter
+        printWriter: PrintWriter
     ) {
         val encryptedObject = playerEncryptionKey.encryptJSONObject(jsonObject)
-        bufferedWriter.write(encryptedObject)
+        printWriter.println(encryptedObject)
     }
 
     @Throws(IOException::class)

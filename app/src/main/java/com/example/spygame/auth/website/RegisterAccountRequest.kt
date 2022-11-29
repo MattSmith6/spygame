@@ -1,7 +1,9 @@
 package com.example.spygame.auth.website
 
 import androidx.core.util.Consumer
+import com.example.spygame.util.ThreadCreator
 import org.apache.hc.core5.http.HttpEntity
+import org.json.JSONObject
 
 class RegisterAccountRequest(private val email: String, private val username: String,
                              private val password: String) : SpyGameHttpRequest {
@@ -10,8 +12,13 @@ class RegisterAccountRequest(private val email: String, private val username: St
         const val PATH = "register"
     }
 
-    override fun createHttpRequest(entityConsumer: Consumer<HttpEntity>) {
-        makeRequest(Constants.PATH, createParameters(), this::makePostRequest, entityConsumer)
+    override fun createHttpRequest(objectConsumer: Consumer<JSONObject?>) {
+        var jsonObject: JSONObject? = null;
+        ThreadCreator.createThreadWithCallback({
+            jsonObject = makeRequest(Constants.PATH, createParameters(), this::makePostRequest)
+        }, {
+            objectConsumer.accept(jsonObject)
+        })
     }
 
     private fun createParameters(): Map<String, String> {

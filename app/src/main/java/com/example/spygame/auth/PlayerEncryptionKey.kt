@@ -1,5 +1,6 @@
 package com.example.spygame.auth
 
+import android.util.Log
 import org.json.JSONObject
 
 import org.json.JSONTokener
@@ -19,14 +20,16 @@ class PlayerEncryptionKey {
     private var cipher: Cipher? = null
 
     fun initialize(premasterSecret: ByteArray) {
+        Log.i("ENCRYPTION KEY", "Initializing...")
+
         secretKey = SecretKeySpec(premasterSecret, CipherConstants.CIPHER_TYPE)
         var cipher: Cipher? = null
         try {
             cipher = Cipher.getInstance(CipherConstants.CIPHER_TYPE)
         } catch (ex: NoSuchPaddingException) {
-            ex.printStackTrace()
+            Log.e("ENCRYPTION KEY", ex.stackTraceToString())
         } catch (ex: NoSuchAlgorithmException) {
-            ex.printStackTrace()
+            Log.e("ENCRYPTION KEY", ex.stackTraceToString())
         }
         this.cipher = cipher
     }

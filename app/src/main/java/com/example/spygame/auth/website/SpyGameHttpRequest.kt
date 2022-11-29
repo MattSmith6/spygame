@@ -25,51 +25,50 @@ interface SpyGameHttpRequest {
         const val HOST_NAME: String = "http://137.184.180.66:80/account/";
     }
 
-    fun createHttpRequest(entityConsumer: Consumer<HttpEntity>)
+    fun createHttpRequest(objectConsumer: Consumer<JSONObject?>)
 
     fun makeRequest(
         path: String, params: Map<String, String>?,
-        requestFunction: KFunction2<String, Map<String, String>?, ClassicHttpRequest>,
-        entityConsumer: Consumer<HttpEntity>
-    ) {
+        requestFunction: KFunction2<String, Map<String, String>?, ClassicHttpRequest>
+    ): JSONObject? {
         try {
             HttpClients.createDefault().use { httpClient ->
                 val httpRequest = requestFunction.call(path, params)
                 httpClient.execute(httpRequest).use { response ->
                     val httpEntity = response.entity
-                    entityConsumer.accept(httpEntity)
+                    val jsonObject = getJSONObject(httpEntity)
                     EntityUtils.consume(httpEntity)
+
+                    return jsonObject
                 }
             }
         } catch (ex: IOException) {
             ex.printStackTrace()
         }
+
+        return null
     }
 
-    fun getJSONObjectConsumer(jsonConsumer: Consumer<JSONObject?>): Consumer<HttpEntity> {
-        return Consumer {
-            httpEntity ->
-            var jsonObject: JSONObject? = null
-            try {
-                BufferedReader(InputStreamReader(httpEntity.getContent())).use { bufferedReader ->
-                    val jsonStringBuilder = StringBuilder()
+    fun getJSONObject(httpEntity: HttpEntity?): JSONObject? {
+        try {
+            BufferedReader(InputStreamReader(httpEntity?.getContent())).use { bufferedReader ->
+                val jsonStringBuilder = StringBuilder()
 
-                    var currentLine: String? = bufferedReader.readLine()
-                    while (currentLine != null) {
-                        jsonStringBuilder.append(currentLine)
-                        currentLine = bufferedReader.readLine()
-                    }
-
-                    val stringifiedJSON = jsonStringBuilder.toString()
-                    val jsonTokener = JSONTokener(stringifiedJSON)
-                    jsonObject = JSONObject(jsonTokener)
+                var currentLine: String? = bufferedReader.readLine()
+                while (currentLine != null) {
+                    jsonStringBuilder.append(currentLine)
+                    currentLine = bufferedReader.readLine()
                 }
-            } catch (ex: IOException) {
-                ex.printStackTrace()
-            }
 
-            jsonConsumer.accept(jsonObject)
+                val stringifiedJSON = jsonStringBuilder.toString()
+                val jsonTokener = JSONTokener(stringifiedJSON)
+                return JSONObject(jsonTokener)
+            }
+        } catch (ex: IOException) {
+            ex.printStackTrace()
         }
+
+        return null
     }
 
     fun makeGetRequest(path: String, keyValuePairs: Map<String, String>?): HttpGet {

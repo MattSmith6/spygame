@@ -1,5 +1,7 @@
 package com.example.spygame
 
+import android.os.StrictMode
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
@@ -41,6 +43,7 @@ import java.util.regex.Pattern
 @Preview
 @Composable
 fun Navigation() {
+    StrictMode.enableDefaults();
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.LoginScreen.route) {
         composable(route = Screen.LoginScreen.route) {
@@ -149,18 +152,34 @@ fun LoginScreen(navController: NavController) {
 
         OutlinedButton(
             onClick = {
-                serverConnectionHandler.createServerConnection()
+                badLoginCredentialsOpacity = 1f
 
-                if (serverConnectionHandler.isConnectionOpened()) {
-                    val handshakePacket = PlayerHandshakePacket(username, password, playerEncryptionKey)
-                    serverConnectionHandler.sendPacket(handshakePacket)
+                // Create the server connection with callback to check connection and initialization
+                serverConnectionHandler.createServerConnection {
 
-                    if (playerEncryptionKey.isInitialized()) {
-                        navController.navigate(Screen.MenuScreen.route)
-                    } else {
-                        serverConnectionHandler.closeConnection()
-                        badLoginCredentialsOpacity = 1f
+                    Log.i("NAVIGATION", "Created server connection, in callback")
+
+                    if (serverConnectionHandler.isConnectionOpened()) {
+
+                        Log.i("NAVIGATION", "Connection opened successfully")
+
+                        val handshakePacket = PlayerHandshakePacket(username, password, playerEncryptionKey)
+
+                        // Send packet with callback with check on initialization
+                        serverConnectionHandler.sendPacket(handshakePacket) {
+
+                            Log.i("NAVIGATION", "Sent packet, in callback")
+
+                            if (playerEncryptionKey.isInitialized()) {
+                                navController.navigate(Screen.MenuScreen.route)
+                            } else {
+                                serverConnectionHandler.closeConnection()
+                                badLoginCredentialsOpacity = 1f
+                            }
+
+                        }
                     }
+
                 }
                       },
             modifier = Modifier
@@ -349,8 +368,7 @@ fun RegisterScreen(navController: NavController) {
                     usernameErrorOpacity = 1f
                     validUsername = false
                 } else {
-                    val checkUsernameExistsRequest = CheckUsernameExistsRequest(username)
-                    checkUsernameExistsRequest.createHttpRequest(checkUsernameExistsRequest.getJSONObjectConsumer {
+                    CheckUsernameExistsRequest(username).createHttpRequest {
                             jsonObject ->
                         // If the object has the exists property (it should) and the username does not exist,
                         // we should set the error message when signing up
@@ -359,7 +377,7 @@ fun RegisterScreen(navController: NavController) {
                             usernameErrorOpacity = 1f
                             validUsername = false
                         }
-                    })
+                    }
                 }
 
                 var validPassword = true
@@ -370,17 +388,17 @@ fun RegisterScreen(navController: NavController) {
                 }
 
                 if (validEmail && validUsername && validPassword) {
-                    val registerRequest = RegisterAccountRequest(email, username, password)
-                    registerRequest.createHttpRequest(registerRequest.getJSONObjectConsumer {
+                    RegisterAccountRequest(email, username, password).createHttpRequest {
                         jsonObject ->
                         if (jsonObject == null || jsonObject.has("error")) {
                             passwordErrorMessage = jsonObject?.getString("error").orEmpty()
                             passwordErrorOpacity = 1f
                         } else {
                             // TODO: Alert about email verification first
+                            Log.i("REGISTER", jsonObject.toString())
                             navController.navigate(Screen.LoginScreen.route)
                         }
-                    })
+                    }
                 }
             },
             modifier = Modifier

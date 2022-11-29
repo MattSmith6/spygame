@@ -1,7 +1,8 @@
 package com.example.spygame.auth.website
 
 import androidx.core.util.Consumer
-import org.apache.hc.core5.http.HttpEntity
+import com.example.spygame.util.ThreadCreator
+import org.json.JSONObject
 
 class ResetPasswordRequest(private val email: String) : SpyGameHttpRequest {
 
@@ -9,8 +10,13 @@ class ResetPasswordRequest(private val email: String) : SpyGameHttpRequest {
         const val PATH: String = "reset/request"
     }
 
-    override fun createHttpRequest(entityConsumer: Consumer<HttpEntity>) {
-        makeRequest(Constants.PATH, getParameters(), this::makePostRequest, entityConsumer)
+    override fun createHttpRequest(objectConsumer: Consumer<JSONObject?>) {
+        var jsonObject: JSONObject? = null;
+        ThreadCreator.createThreadWithCallback({
+            jsonObject = makeRequest(Constants.PATH, getParameters(), this::makePostRequest)
+        }, {
+            objectConsumer.accept(jsonObject)
+        })
     }
 
     private fun getParameters(): Map<String, String> {
