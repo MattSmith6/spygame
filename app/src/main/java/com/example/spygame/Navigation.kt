@@ -52,9 +52,9 @@ fun Navigation() {
         composable(route = Screen.MenuScreen.route) {
             MenuScreen(navController = navController)
         }
-        composable(route = Screen.InterfaceScreen.route) {
-            InterfaceScreen(navController = navController)
-        }
+//        composable(route = Screen.InterfaceScreen.route) {
+//            InterfaceScreen(navController = navController)
+//        }
         composable(route = Screen.ForgotPasswordScreen.route) {
             ForgotPasswordScreen(navController = navController)
         }
@@ -220,54 +220,6 @@ fun MenuScreen(navController: NavController) {
     }
 }
 
-//@Preview
-@Composable
-fun InterfaceScreen(navController: NavController) {
-    var isPlayerNearby: Boolean = true //Returns true if a player is within the range of 15 feet
-    var playerName: String = "default_name" //The name of the nearest player
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        if (isPlayerNearby) {
-            Text(
-                text = "Player $playerName is within range!", //This can also just say "A player is within range"
-                fontSize = 20.sp
-            )
-            Image(
-                painter = painterResource(id = R.drawable.player_near_icon),
-                contentDescription = "Nobody Nearby",
-                modifier = Modifier
-                    .size(500.dp)
-            )
-            //ELIMINATE button appears only if a player is nearby
-            Button(
-                onClick = { /*Eliminates Player $playerName from game and rewards a point*/ },
-                modifier = Modifier
-                    .height(100.dp)
-                    .fillMaxWidth()
-                    .padding(bottom = 10.dp, top = 10.dp)
-            ) {
-                Text(
-                    text = "ELIMINATE",
-                    fontSize = 50.sp,
-                    textAlign = TextAlign.Center
-                )
-            }
-        } else {
-            Text(text = "No players nearby. Keep searching.", fontSize = 20.sp)
-            Image(
-                painter = painterResource(id = R.drawable.nobody_near_icon),
-                contentDescription = "Nobody Nearby",
-                modifier = Modifier
-                    .size(500.dp)
-            )
-        }
-    }
-}
 
 
 @Composable
