@@ -58,7 +58,7 @@ fun Navigation() {
                 }
             )
         ) {
-
+            MenuScreen()
         }
     }
 }
@@ -67,8 +67,11 @@ fun Navigation() {
 fun LoginScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
     val serverConnectionHandler by remember { mutableStateOf(ServerConnectionHandler()) }
     val playerEncryptionKey by remember { mutableStateOf(PlayerEncryptionKey()) }
+
+    var badLoginCredentialsOpacity by remember { mutableStateOf(0f) }
 
     Column(
         modifier = Modifier
@@ -101,7 +104,10 @@ fun LoginScreen(navController: NavController) {
 
         OutlinedTextField(
             value = username,
-            onValueChange = { username = it },
+            onValueChange = {
+                username = it
+                badLoginCredentialsOpacity = 0f
+                            },
             label = { Text(text = "Enter Username") },
             leadingIcon = {
                 Icon(Icons.Default.Person, contentDescription = "username")
@@ -113,7 +119,10 @@ fun LoginScreen(navController: NavController) {
 
         OutlinedTextField(
             value = password,
-            onValueChange = { password = it },
+            onValueChange = {
+                password = it
+                badLoginCredentialsOpacity = 0f
+                            },
             label = { Text(text = "Enter Password") },
             leadingIcon = {
                 Icon(Icons.Default.Info, contentDescription = "password")
@@ -123,6 +132,19 @@ fun LoginScreen(navController: NavController) {
                 .padding(bottom = 10.dp, top = 10.dp),
             visualTransformation = PasswordVisualTransformation(),
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Password)
+        )
+
+        Text(
+            text = "Incorrect login credentials.",
+            fontFamily = FontFamily.Monospace,
+            textAlign = TextAlign.Left,
+            fontSize = 12.sp,
+            fontWeight = FontWeight.Light,
+            color = Color.Red,
+            fontStyle = FontStyle.Italic,
+            modifier = Modifier
+                .alpha(badLoginCredentialsOpacity)
+                .padding(top = 3.dp, bottom = 3.dp)
         )
 
         OutlinedButton(
@@ -137,7 +159,7 @@ fun LoginScreen(navController: NavController) {
                         navController.navigate(Screen.MenuScreen.route)
                     } else {
                         serverConnectionHandler.closeConnection()
-                        // TODO: DISPLAY INVALID LOGIN CREDENTIALS ERROR
+                        badLoginCredentialsOpacity = 1f
                     }
                 }
                       },
@@ -237,7 +259,7 @@ fun RegisterScreen(navController: NavController) {
         Text(
             text = emailErrorMessage,
             fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Left,
             fontSize = 12.sp,
             fontWeight = FontWeight.Light,
             color = Color.Red,
@@ -265,7 +287,7 @@ fun RegisterScreen(navController: NavController) {
         Text(
             text = usernameErrorMessage,
             fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Left,
             fontSize = 12.sp,
             fontWeight = FontWeight.Light,
             color = Color.Red,
@@ -295,7 +317,7 @@ fun RegisterScreen(navController: NavController) {
         Text(
             text = passwordErrorMessage,
             fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center,
+            textAlign = TextAlign.Left,
             fontSize = 12.sp,
             fontWeight = FontWeight.Light,
             color = Color.Red,
@@ -392,7 +414,6 @@ fun RegisterScreen(navController: NavController) {
     }
 }
 
-@Preview
 @Composable
 fun MenuScreen() {
     Column(

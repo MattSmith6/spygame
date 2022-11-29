@@ -32,7 +32,7 @@ class ServerConnectionHandler {
     }
 
     fun isConnectionOpened(): Boolean {
-        return socket?.isClosed == true && encryptionKey.isInitialized()
+        return socket?.isClosed == true
     }
 
     fun sendPacket(packet: AbstractPacket): Boolean {
