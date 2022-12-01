@@ -16,18 +16,18 @@ abstract class AbstractPacket(private val packetId: Int) {
     }
 
     fun sendPacket(playerEncryptionKey: PlayerEncryptionKey,
-                   bufferedReader: BufferedReader, printWriter: PrintWriter) {
+                   bufferedReader: BufferedReader, printWriter: PrintWriter): JSONObject {
         // Send unencrypted packet id for server to read
         printWriter.println(getPacketId())
 
         // Process the rest of the packet according to protocol
-        process(playerEncryptionKey, bufferedReader, printWriter)
+        return process(playerEncryptionKey, bufferedReader, printWriter)
     }
 
     protected abstract fun process(
         playerEncryptionKey: PlayerEncryptionKey,
         bufferedReader: BufferedReader, printWriter: PrintWriter
-    )
+    ): JSONObject
 
     @Throws(IOException::class)
     protected fun writeJSONObjectToOutput(

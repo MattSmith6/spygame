@@ -16,17 +16,11 @@ class PlayerHandshakePacket(private val username: String,
 
     private val LOGGER_NAME: String = "HANDSHAKE PACKET";
 
-    private var errorMessage: String? = null
-
-    fun getErrorMessage(): String? {
-        return errorMessage
-    }
-
     override fun process(
         playerEncryptionKey: PlayerEncryptionKey,
         bufferedReader: BufferedReader,
         printWriter: PrintWriter
-    ) {
+    ): JSONObject {
         val handshake = PlayerAuthenticationHandshake(username, password)
 
         Log.i(LOGGER_NAME, "Created PlayerAuthenticationHandshake")
@@ -43,8 +37,8 @@ class PlayerHandshakePacket(private val username: String,
         Log.i(LOGGER_NAME, "Read player hello from input")
 
         if (shouldAbortHandshake(serverHelloObject)) {
-            Log.i(LOGGER_NAME, "Bad server hello, return early, $errorMessage");
-            return
+            Log.i(LOGGER_NAME, "Bad server hello, return early, ${getErrorMessage(serverHelloObject)}");
+            return serverHelloObject
         }
 
         // Generate player key exchange object and send to server
@@ -59,20 +53,43 @@ class PlayerHandshakePacket(private val username: String,
         Log.i(LOGGER_NAME, "Read server proof from input")
 
         if (shouldAbortHandshake(serverProof)) {
-            Log.i(LOGGER_NAME, "Bad server proof, return early, $errorMessage");
-            return
+            Log.i(LOGGER_NAME, "Bad server proof, return early, ${getErrorMessage(serverProof)}");
+            return serverProof
         }
 
         // Check validity of server proof
         if (!handshake.isServerProofValid(serverProof)) {
-            errorMessage = "Invalid server proof"
-            Log.i(LOGGER_NAME, "$errorMessage")
-            return
+            Log.i(LOGGER_NAME, "Invalid server proof")
+            return getErrorJSONObject("Invalid server proof")
         }
 
         // Our proof was valid and we now have the encryption key
         encryptionKey.initialize(handshake.getSharedSecret())
         Log.i(LOGGER_NAME, "Initialized secret successfully")
+
+        return getSuccessJSONObject()
+    }
+
+    private fun getErrorJSONObject(error: String): JSONObject {
+        val errorJSONObject = getStatusJSONObject("ERROR")
+        errorJSONObject.put("error", error)
+
+        return errorJSONObject
+    }
+
+    private fun getSuccessJSONObject(): JSONObject {
+        return getStatusJSONObject("SUCCESS")
+    }
+
+    private fun getStatusJSONObject(status: String): JSONObject {
+        val jsonObject = JSONObject()
+        jsonObject.put("status", status)
+
+        return jsonObject
+    }
+
+    private fun getErrorMessage(jsonObject: JSONObject): String {
+        return jsonObject.getString("error")
     }
 
     private fun shouldAbortHandshake(jsonObject: JSONObject): Boolean {
@@ -80,7 +97,6 @@ class PlayerHandshakePacket(private val username: String,
             return false
         }
 
-        errorMessage = jsonObject.getString("error")
         return true
     }
 

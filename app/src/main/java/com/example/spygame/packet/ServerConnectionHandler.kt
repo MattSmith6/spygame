@@ -3,8 +3,10 @@ package com.example.spygame.packet
 import android.os.Handler
 import android.os.Looper
 import android.util.Log
+import androidx.core.util.Consumer
 import com.example.spygame.auth.PlayerEncryptionKey
 import com.example.spygame.util.ThreadCreator
+import org.json.JSONObject
 import java.io.BufferedReader
 import java.io.BufferedWriter
 import java.io.InputStreamReader
@@ -37,7 +39,7 @@ class ServerConnectionHandler {
         return socket?.isClosed == false
     }
 
-    fun sendPacket(packet: AbstractPacket, callback: Runnable): Boolean {
+    fun sendPacket(packet: AbstractPacket, callback: Consumer<JSONObject>): Boolean {
         Log.i(LOGGER_NAME, "In send packet method");
 
         if (!isConnectionOpened()) {
@@ -51,9 +53,13 @@ class ServerConnectionHandler {
         }
 
         Log.i(LOGGER_NAME, "Sending packet with id ${packet.getPacketId()}...");
+        var jsonObject: JSONObject? = null
+
         ThreadCreator.createThreadWithCallback({
-            packet.sendPacket(encryptionKey, getBufferedReader(), getPrintWriter())
-        }, callback)
+            jsonObject = packet.sendPacket(encryptionKey, getBufferedReader(), getPrintWriter())
+        }, {
+            callback.accept(jsonObject!!)
+        })
 
         return true
     }
