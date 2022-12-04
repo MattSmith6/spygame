@@ -1,5 +1,7 @@
 package com.example.spygame
 
+import android.os.StrictMode
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -15,9 +17,11 @@ import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
@@ -33,11 +37,20 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
+import com.example.spygame.auth.PlayerEncryptionKey
+import com.example.spygame.auth.website.CheckUsernameExistsRequest
+import com.example.spygame.auth.website.RegisterAccountRequest
+import com.example.spygame.auth.website.ResetPasswordRequest
+import com.example.spygame.packet.PlayerHandshakePacket
+import com.example.spygame.packet.ServerConnectionHandler
+import java.util.regex.Pattern
 
 var isHost: Boolean = false
 
+@Preview
 @Composable
 fun Navigation() {
+    StrictMode.enableDefaults();
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = Screen.LoginScreen.route) {
         composable(route = Screen.LoginScreen.route) {
@@ -62,6 +75,12 @@ fun Navigation() {
 fun LoginScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    val serverConnectionHandler by remember { mutableStateOf(ServerConnectionHandler()) }
+    val playerEncryptionKey by remember { mutableStateOf(PlayerEncryptionKey()) }
+
+    var errorMessage by remember { mutableStateOf("") }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -74,13 +93,56 @@ fun LoginScreen(navController: NavController) {
         LoginFields(
             username = username,
             password = password,
-            onUsernameChange = { username = it },
-            onPasswordChange = { password = it },
-            onForgotPassClick = { navController.navigate(Screen.ForgotPasswordScreen.route)/*Should open forgot password prompt*/ }
+            errorMessage = errorMessage,
+            onUsernameChange = {
+                username = it
+                errorMessage = ""
+                               },
+            onPasswordChange = {
+                password = it
+                errorMessage = ""
+                               },
+            onForgotPassClick = { navController.navigate(Screen.ForgotPasswordScreen.route) }
         )
+
         LoginRegisterFooter(
             mainButtonTxt = "LOG IN",
-            onMainButtonClick = { navController.navigate(Screen.MenuScreen.route)/*Checks account details, if wrong then prompts to try again, if not then goes to MenuScreen()*/ },
+            onMainButtonClick = {
+                // Create the server connection with callback to check connection and initialization
+                serverConnectionHandler.createServerConnection {
+
+                    Log.i("NAVIGATION", "Created server connection, in callback")
+
+                    if (serverConnectionHandler.isConnectionOpened()) {
+
+                        Log.i("NAVIGATION", "Connection opened successfully")
+
+                        val handshakePacket =
+                            PlayerHandshakePacket(username, password, playerEncryptionKey)
+
+                        // Send packet with callback with check on initialization
+                        serverConnectionHandler.sendPacket(handshakePacket) {
+                            jsonObject ->
+
+                            Log.i("NAVIGATION", "Sent packet, in callback")
+
+                            if (jsonObject.has("error")) {
+                                val trueErrorMessage = jsonObject.getString("error")
+                                serverConnectionHandler.closeConnection()
+
+                                if (trueErrorMessage.equals("bad_record_mac")) {
+                                    errorMessage = "Invalid login credentials"
+                                } else {
+                                    errorMessage = trueErrorMessage
+                                }
+                            } else {
+                                navController.navigate(Screen.MenuScreen.route)
+                            }
+                        }
+                    }
+
+                }
+            },
             switchScreenTxt = "Don't have an account?",
             onSwitchScreenClick = { navController.navigate(Screen.RegisterScreen.route) },
             switchScreenTxtButton = "REGISTER"
@@ -93,6 +155,13 @@ fun RegisterScreen(navController: NavController) {
     var email by remember { mutableStateOf("") }
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
+
+    var emailErrorMessage by remember { mutableStateOf("") }
+    var usernameErrorMessage by remember { mutableStateOf("") }
+    var passwordErrorMessage by remember { mutableStateOf("") }
+
+    val pattern: Pattern = Pattern.compile("^[a-zA-Z0-9]+\$")
+
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -103,15 +172,74 @@ fun RegisterScreen(navController: NavController) {
         LogoHeader(pageName = "SIGN UP")
         RegisterFields(
             email = email,
+            emailErrorMessage = emailErrorMessage,
             username = username,
+            usernameErrorMessage = usernameErrorMessage,
             password = password,
-            onEmailChange = { email = it },
-            onUsernameChange = { username = it },
-            onPasswordChange = { password = it }
+            passwordErrorMessage = passwordErrorMessage,
+            onEmailChange = {
+                email = it
+                emailErrorMessage = ""
+                            },
+            onUsernameChange = {
+                username = it
+                usernameErrorMessage = ""
+                               },
+            onPasswordChange = {
+                password = it
+                passwordErrorMessage = ""
+            }
         )
         LoginRegisterFooter(
             mainButtonTxt = "CREATE ACCOUNT",
-            onMainButtonClick = { navController.navigate(Screen.MenuScreen.route)/*Checks if csun.edu and checks if account details don't exist then creates account*/ },
+            onMainButtonClick = {
+                var validEmail = false
+                if (email.contains("@")) {
+                    validEmail = email.split("@")[1].endsWith("csun.edu")
+                }
+
+                if (!validEmail) {
+                    emailErrorMessage = "This email is not a valid CSUN email."
+                }
+
+                var validUsername = true
+                if (username.length < 5 || username.length > 16) {
+                    usernameErrorMessage = "Usernames must be between 5 and 16 characters."
+                    validUsername = false
+                } else if (!pattern.matcher(username).matches()) {
+                    usernameErrorMessage = "Usernames cannot contain any special characters."
+                    validUsername = false
+                } else {
+                    CheckUsernameExistsRequest(username).createHttpRequest {
+                            jsonObject ->
+                        // If the object has the exists property (it should) and the username does not exist,
+                        // we should set the error message when signing up
+                        if (jsonObject?.has("exists") == true && !jsonObject.getBoolean("exists")) {
+                            usernameErrorMessage = "This username already exists, pick another."
+                            validUsername = false
+                        }
+                    }
+                }
+
+                var validPassword = true
+                if (password.length < 8) {
+                    passwordErrorMessage = "Passwords must be at least 8 characters long."
+                    validPassword = false
+                }
+
+                if (validEmail && validUsername && validPassword) {
+                    RegisterAccountRequest(email, username, password).createHttpRequest {
+                            jsonObject ->
+                        if (jsonObject == null || jsonObject.has("error")) {
+                            passwordErrorMessage = jsonObject?.getString("error").orEmpty()
+                        } else {
+                            // TODO: Alert about email verification first
+                            Log.i("REGISTER", jsonObject.toString())
+                            navController.navigate(Screen.LoginScreen.route)
+                        }
+                    }
+                }
+                                },
             switchScreenTxt = "Already have an account?",
             onSwitchScreenClick = { navController.navigate(Screen.LoginScreen.route) },
             switchScreenTxtButton = "LOG IN"
@@ -121,8 +249,10 @@ fun RegisterScreen(navController: NavController) {
 
 @Preview
 @Composable
-fun ForgotPasswordPrompt() {
+fun ForgotPasswordPrompt(navController: NavController) {
     var email by remember { mutableStateOf("") }
+    val errorMessage by remember { mutableStateOf("") }
+
     Card(elevation = 10.dp, modifier = Modifier.padding(20.dp)) {
         Column(
             modifier = Modifier
@@ -132,14 +262,28 @@ fun ForgotPasswordPrompt() {
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
             Text(text = "Enter your account email. Link will be sent to reset password.")
+            Text(
+                text = errorMessage,
+
+            )
+
             PasswordPromptField(
                 email = email,
                 onEmailChange = { email = it },
-                onSubmitClick = {/*Sends email to reset password*/}
+                onSubmitClick = { ResetPasswordRequest(email).createHttpRequest {
+                    jsonObject ->
+                    if (jsonObject?.has("error") == true) {
+
+                    } else {
+                        // TODO: ALERT USER TO CHECK EMAIL
+                        navController.navigate( Screen.LoginScreen.route );
+                    }
+                } }
             )
         }
     }
 }
+
 
 @Composable
 fun MenuScreen(navController: NavController) {
@@ -310,6 +454,7 @@ fun LoginRegisterFooter(
 fun ColumnScope.LoginFields(
     username: String,
     password: String,
+    errorMessage: String,
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit,
     onForgotPassClick: () -> Unit
@@ -327,6 +472,7 @@ fun ColumnScope.LoginFields(
             imeAction = ImeAction.Next
         )
     )
+
     TxtField(
         value = password,
         label = "Password",
@@ -348,6 +494,18 @@ fun ColumnScope.LoginFields(
     ) {
         Text(text = "Forgot Password?", fontSize = 12.sp)
     }
+
+    Text(
+        text = errorMessage,
+        fontFamily = FontFamily.Monospace,
+        textAlign = TextAlign.Left,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Light,
+        color = Color.Red,
+        fontStyle = FontStyle.Italic,
+        modifier = Modifier
+            .padding(top = 1.dp, bottom = 3.dp)
+    )
 }
 
 @Composable
@@ -385,8 +543,11 @@ fun ColumnScope.PasswordPromptField(
 @Composable
 fun RegisterFields(
     email: String,
+    emailErrorMessage: String,
     username: String,
+    usernameErrorMessage: String,
     password: String,
+    passwordErrorMessage: String,
     onEmailChange: (String) -> Unit,
     onUsernameChange: (String) -> Unit,
     onPasswordChange: (String) -> Unit
@@ -404,6 +565,19 @@ fun RegisterFields(
             imeAction = ImeAction.Next
         )
     )
+
+    Text(
+        text = emailErrorMessage,
+        fontFamily = FontFamily.Monospace,
+        textAlign = TextAlign.Left,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Light,
+        color = Color.Red,
+        fontStyle = FontStyle.Italic,
+        modifier = Modifier
+            .padding(top = 1.dp, bottom = 3.dp)
+    )
+
     TxtField(
         value = username,
         label = "Username",
@@ -417,6 +591,19 @@ fun RegisterFields(
             imeAction = ImeAction.Next
         )
     )
+
+    Text(
+        text = usernameErrorMessage,
+        fontFamily = FontFamily.Monospace,
+        textAlign = TextAlign.Left,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Light,
+        color = Color.Red,
+        fontStyle = FontStyle.Italic,
+        modifier = Modifier
+            .padding(top = 1.dp, bottom = 3.dp)
+    )
+
     TxtField(
         value = password,
         label = "Password",
@@ -430,6 +617,18 @@ fun RegisterFields(
             keyboardType = KeyboardType.Password,
             imeAction = ImeAction.Go
         )
+    )
+
+    Text(
+        text = passwordErrorMessage,
+        fontFamily = FontFamily.Monospace,
+        textAlign = TextAlign.Left,
+        fontSize = 12.sp,
+        fontWeight = FontWeight.Light,
+        color = Color.Red,
+        fontStyle = FontStyle.Italic,
+        modifier = Modifier
+            .padding(top = 1.dp, bottom = 3.dp)
     )
 
 }

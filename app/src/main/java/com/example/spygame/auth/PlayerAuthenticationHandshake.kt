@@ -1,5 +1,6 @@
 package com.example.spygame.auth
 
+import android.util.Log
 import com.example.spygame.auth.AuthenticationConstants.BYTE_ORDER
 import com.example.spygame.auth.AuthenticationConstants.IMD
 import com.example.spygame.auth.AuthenticationConstants.RNG
@@ -10,7 +11,7 @@ import org.json.JSONObject
 import java.nio.ByteOrder
 
 
-class PlayerAuthenticationHandshake(username: String, password: String) {
+class PlayerAuthenticationHandshake(private val username: String, password: String) {
 
     private val I: Bytes = PlainText(username)
     private val P: Bytes = PlainText(password)
@@ -27,7 +28,7 @@ class PlayerAuthenticationHandshake(username: String, password: String) {
 
     fun getPlayerHelloObject(): JSONObject {
         val helloPacket: JSONObject = JSONObject()
-        helloPacket.put("I", I)
+        helloPacket.put("I", username)
 
         return helloPacket
     }
@@ -52,6 +53,8 @@ class PlayerAuthenticationHandshake(username: String, password: String) {
 
             responseObject.put("A", encodeToBase64(A))
             responseObject.put("M1", encodeToBase64(M1))
+
+            Log.i("HANDSHAKE", responseObject.toString())
         } catch (e: SRP6Exception) {
             responseObject.put("error", "Bad handshake")
         } catch (e: IllegalStateException) {
@@ -91,7 +94,7 @@ class PlayerAuthenticationHandshake(username: String, password: String) {
     }
 
     private fun getBase64Flag(): Int {
-        return android.util.Base64.DEFAULT
+        return android.util.Base64.NO_WRAP
     }
 
     private fun getIntegerVariableFromJSON(
