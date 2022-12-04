@@ -3,6 +3,7 @@ package com.example.spygame
 import android.graphics.Color
 import android.os.Build
 import android.os.Bundle
+import android.os.Handler
 import android.widget.Button
 import android.widget.TextView
 import android.widget.Toast
@@ -31,9 +32,8 @@ class PlayerToPlayerInteraction : AppCompatActivity() {
 
     @Preview
     @Composable
-    fun InterfaceScreen(/*navController: NavController*/) {
+    fun InterfaceScreen() {
         var enabled by remember { mutableStateOf(isPlayerNearby) }
-        val player = PlayerToPlayerInteraction()
         var playerName: String = "default_name" //The name of the nearest player
         Column(
             modifier = Modifier
@@ -42,7 +42,7 @@ class PlayerToPlayerInteraction : AppCompatActivity() {
             verticalArrangement = Arrangement.Center,
             horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            if (isPlayerNearby) {
+            if (enabled) {
                 Text(
                     text = "Player $playerName is within range!", //This can also just say "A player is within range"
                     fontSize = 20.sp
@@ -55,7 +55,7 @@ class PlayerToPlayerInteraction : AppCompatActivity() {
                 )
                 //ELIMINATE button appears only if a player is nearby
                 Button(
-                    onClick = { player.attack()/*Eliminates Player $playerName from game and rewards a point*/ },
+                    onClick = { attack()/*Eliminates Player $playerName from game and rewards a point*/ },
                     modifier = Modifier
                         .height(100.dp)
                         .fillMaxWidth()
@@ -79,66 +79,36 @@ class PlayerToPlayerInteraction : AppCompatActivity() {
         }
     }
 
+    @Composable
+    fun InterfaceImage(text: String) {
+        
+    }
+    
+    @Composable
+    private fun EliminationButton(isEnabled: Boolean) {
+        Button(
+            onClick = { attack()/*Eliminates Player $playerName from game and rewards a point*/ },
+            modifier = Modifier
+                .height(100.dp)
+                .fillMaxWidth()
+                .padding(bottom = 10.dp, top = 10.dp),
+            enabled = isEnabled
+        ) {
+            Text(
+                text = "ELIMINATE",
+                fontSize = 50.sp,
+                textAlign = TextAlign.Center
+            )
+        }
+    }
+
     @RequiresApi(Build.VERSION_CODES.S)
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-//        checkPermissions()
-//        checkWifiDirect()
-
         startAdvertising()
         startDiscovery()
     }
-
-    //////////////////////////////////////////////// Alerts/State Changes /////////////////////////////////////////////
-
-//    // Changes the alert message to "Attack" and the alert box to red
-//    private fun discovering() {
-//        val textView = findViewById<TextView>(R.id.tv_alert)
-//        val button = findViewById<Button>(R.id.btn_attack)
-//        textView.setBackgroundColor(Color.parseColor("#f0752a"))
-//        textView.setTextColor(Color.parseColor("#000000"))
-//        textView.text = "Discovering"
-//        button.setBackgroundColor(Color.parseColor("#cdcdcd"))
-//        button.isEnabled = false
-//        button.isClickable = false
-//    }
-//
-//    // Changes the alert message to "Out of Range" and the alert box to blue
-//    private fun endpointFound() {
-//        val textView = findViewById<TextView>(R.id.tv_alert)
-//        val button = findViewById<Button>(R.id.btn_attack)
-//        textView.setBackgroundColor(Color.parseColor("#ecf744"))
-//        textView.setTextColor(Color.parseColor("#000000"))
-//        textView.text = "Endpoint Found"
-//        button.setBackgroundColor(Color.parseColor("#cdcdcd"))
-//        button.isEnabled = false
-//        button.isClickable = false
-//    }
-//
-//    // Changes the alert message to "Out of Range" and the alert box to blue
-//    private fun connectionMade() {
-//        val textView = findViewById<TextView>(R.id.tv_alert)
-//        val button = findViewById<Button>(R.id.btn_attack)
-//        textView.setBackgroundColor(Color.parseColor("#82df42"))
-//        textView.setTextColor(Color.parseColor("#eb2d2d"))
-//        textView.text = "Connection Made"
-//        button.setBackgroundColor(Color.parseColor("#eb2d2d"))
-//        button.isEnabled = true
-//        button.isClickable = true
-//    }
-//
-//    // Changes the alert message to "Out of Range" and the alert box to blue
-//    private fun endpointLost() {
-//        val textView = findViewById<TextView>(R.id.tv_alert)
-//        val button = findViewById<Button>(R.id.btn_attack)
-//        textView.setBackgroundColor(Color.parseColor("#eb2d2d"))
-//        textView.setTextColor(Color.parseColor("#000000"))
-//        textView.text = "Endpoint Lost"
-//        button.setBackgroundColor(Color.parseColor("#cdcdcd"))
-//        button.isEnabled = false
-//        button.isClickable = false
-//    }
 
     /////////////////////////////////////////// Advertiser ////////////////////////////////////////////////////////////////
 
@@ -235,7 +205,7 @@ class PlayerToPlayerInteraction : AppCompatActivity() {
     ///////////////////////////////////////// Create/Receive payloads ///////////////////////////////////////////////////
 
     // Create and send payload
-    fun attack() {
+    private fun attack() {
         var bytesPayload: Payload = Payload.fromBytes(byteArrayOf(0x1))
         Nearby.getConnectionsClient(this).sendPayload(toEndpointId, bytesPayload)
     }
@@ -255,5 +225,5 @@ class PlayerToPlayerInteraction : AppCompatActivity() {
             }
         }
     }
-
+    
 }

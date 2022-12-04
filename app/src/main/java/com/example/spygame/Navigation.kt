@@ -52,11 +52,8 @@ fun Navigation() {
         composable(route = Screen.MenuScreen.route) {
             MenuScreen(navController = navController)
         }
-//        composable(route = Screen.InterfaceScreen.route) {
-//            InterfaceScreen(navController = navController)
-//        }
-        composable(route = Screen.ForgotPasswordScreen.route) {
-            ForgotPasswordScreen(navController = navController)
+        composable(route = Screen.InterfaceScreen.route) {
+            PlayerToPlayerInteraction().InterfaceScreen()
         }
     }
 }
@@ -122,6 +119,7 @@ fun RegisterScreen(navController: NavController) {
     }
 }
 
+@Preview
 @Composable
 fun ForgotPasswordPrompt() {
     var email by remember { mutableStateOf("") }
@@ -137,36 +135,12 @@ fun ForgotPasswordPrompt() {
             PasswordPromptField(
                 email = email,
                 onEmailChange = { email = it },
-                onSubmitClick = {/*Checks email, if it exists then sends a reset pw link*/ })
+                onSubmitClick = {/*Sends email to reset password*/}
+            )
         }
     }
 }
 
-@Composable
-fun ForgotPasswordScreen(navController: NavController) {
-    var newPassword1 by remember { mutableStateOf("") }
-    var newPassword2 by remember { mutableStateOf("") }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(20.dp),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        LogoHeader(pageName = "PASSWORD RESET")
-
-        ForgotPasswordField(
-            firstPassword = newPassword1,
-            secondPassword = newPassword2,
-            onFirstPasswordChange = {newPassword1 = it},
-            onSecondPasswordChange = {newPassword2 = it},
-            onResetClick = {/*both passwords should be the same then set password to newPassword1*/}
-        )
-    }
-
-}
-
-//@Preview
 @Composable
 fun MenuScreen(navController: NavController) {
     Column(
@@ -181,12 +155,12 @@ fun MenuScreen(navController: NavController) {
 
         MenuButton( //Lets the player join an existing game
             text = "JOIN",
-            onMenuButtonClick = {navController.navigate(Screen.LobbyScreen.route)/*Prompts for join code*/ }
+            onMenuButtonClick = { navController.navigate(Screen.LobbyScreen.route)/*Prompts for join code*/ }
         )
 
         MenuButton( //Lets the player create their own game and invite
             text = "HOST",
-            onMenuButtonClick = {navController.navigate(Screen.LobbyScreen.route)/*Switches to LobbyScreen*/ }
+            onMenuButtonClick = { navController.navigate(Screen.LobbyScreen.route)/*Switches to LobbyScreen*/ }
         )
         Row(
             modifier = Modifier
@@ -219,7 +193,6 @@ fun MenuScreen(navController: NavController) {
         }
     }
 }
-
 
 
 @Composable
@@ -256,9 +229,10 @@ fun LobbyScreen(joinCode: String, navController: NavController) {
                 .padding(top = 50.dp)
                 .background(color = MaterialTheme.colors.onPrimary)
         ) {
-            StartGameButton(onStartButtonClick = { navController.navigate(Screen.InterfaceScreen.route)
-            /*Checks to see if the minimum amount of players
-            are in the lobby then starts game and switches to InterfaceScreen for all players*/
+            StartGameButton(onStartButtonClick = {
+                navController.navigate(Screen.InterfaceScreen.route)
+                /*Checks to see if the minimum amount of players
+                are in the lobby then starts game and switches to InterfaceScreen for all players*/
             }
             )
         }
@@ -396,13 +370,16 @@ fun ColumnScope.PasswordPromptField(
         )
     )
 
-    TextButton(
-        onClick = onSubmitClick,
-        modifier = Modifier.align(Alignment.End)
+    OutlinedButton(
+        onClick = { onSubmitClick }, modifier = Modifier
+            .fillMaxWidth()
+            .padding(bottom = 10.dp, top = 10.dp)
     ) {
-        Text(text = "Forgot Password?", fontSize = 12.sp)
+        Text(
+            text = "Reset Password",
+            textAlign = TextAlign.Center
+        )
     }
-
 }
 
 @Composable
@@ -455,51 +432,6 @@ fun RegisterFields(
         )
     )
 
-}
-
-@Composable
-fun ForgotPasswordField(
-    firstPassword: String,
-    secondPassword: String,
-    onFirstPasswordChange: (String) -> Unit,
-    onSecondPasswordChange: (String) -> Unit,
-    onResetClick: () -> Unit
-) {
-    Column(modifier = Modifier.fillMaxSize()) { TxtField(
-        value = firstPassword,
-        label = "New Password",
-        placeholder = "Enter New Password",
-        onValueChange = onFirstPasswordChange,
-        visualTransformation = PasswordVisualTransformation(),
-        keyboardOptions = KeyboardOptions(
-            keyboardType = KeyboardType.Password,
-            imeAction = ImeAction.Next
-        )
-    )
-        TxtField(
-            value = secondPassword,
-            label = "Re-enter Password",
-            placeholder = "Re-enter New Password",
-            onValueChange = onSecondPasswordChange,
-            visualTransformation = PasswordVisualTransformation(),
-            keyboardOptions = KeyboardOptions(
-                keyboardType = KeyboardType.Password,
-                imeAction = ImeAction.Go
-            )
-        )
-
-        OutlinedButton(
-            onClick = { /*TODO*/ }, modifier = Modifier
-                .fillMaxWidth()
-                .padding(bottom = 10.dp, top = 10.dp)
-        ) {
-            Text(
-                text = "Reset Password",
-                textAlign = TextAlign.Center
-            )
-        }
-
-    }
 }
 
 @Composable
