@@ -247,7 +247,6 @@ fun RegisterScreen(navController: NavController) {
     }
 }
 
-@Preview
 @Composable
 fun ForgotPasswordPrompt(navController: NavController) {
     var email by remember { mutableStateOf("") }

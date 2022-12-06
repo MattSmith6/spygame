@@ -20,7 +20,7 @@ class PlayerHandshakePacket(private val username: String,
         playerEncryptionKey: PlayerEncryptionKey,
         bufferedReader: BufferedReader,
         printWriter: PrintWriter
-    ): JSONObject {
+    ): JSONObject? {
         val handshake = PlayerAuthenticationHandshake(username, password)
 
         Log.i(LOGGER_NAME, "Created PlayerAuthenticationHandshake")

@@ -16,7 +16,7 @@ abstract class AbstractPacket(private val packetId: Int) {
     }
 
     fun sendPacket(playerEncryptionKey: PlayerEncryptionKey,
-                   bufferedReader: BufferedReader, printWriter: PrintWriter): JSONObject {
+                   bufferedReader: BufferedReader, printWriter: PrintWriter): JSONObject? {
         // Send unencrypted packet id for server to read
         printWriter.println(getPacketId())
 
@@ -27,7 +27,7 @@ abstract class AbstractPacket(private val packetId: Int) {
     protected abstract fun process(
         playerEncryptionKey: PlayerEncryptionKey,
         bufferedReader: BufferedReader, printWriter: PrintWriter
-    ): JSONObject
+    ): JSONObject?
 
     @Throws(IOException::class)
     protected fun writeJSONObjectToOutput(

@@ -58,6 +58,11 @@ class ServerConnectionHandler {
         ThreadCreator.createThreadWithCallback({
             jsonObject = packet.sendPacket(encryptionKey, getBufferedReader(), getPrintWriter())
         }, {
+            if (jsonObject == null) {
+                Log.e("PACKET ID ${packet.getPacketId()}", "Error processing packet, not executing callback.")
+                return@createThreadWithCallback
+            }
+
             callback.accept(jsonObject!!)
         })
 
