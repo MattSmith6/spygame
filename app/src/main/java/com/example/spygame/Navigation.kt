@@ -53,12 +53,6 @@ import java.util.regex.Pattern
 private var isHost: Boolean = false /*Purpose of this is so only a player who is host can see and
                                     use the StartGameButton() in the LobbyScreen(), might need to
                                     change implementation of it for correct functionality.*/
-private var maxPlayerCount: Int = 15 //Default for max players in a lobby. Change if needed
-    get() = field
-    set(value) {
-        field = value
-    }
-
 
 @Preview
 @Composable
