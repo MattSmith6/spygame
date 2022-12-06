@@ -36,6 +36,7 @@ class PlayerToPlayerInteraction : AppCompatActivity() {
     fun InterfaceScreen() {
         var enabled = remember { mutableStateOf(isPlayerNearby) }
         var playerName: String = "default_name" //The name of the nearest player
+//        checkIsPlayerNearby { enabled.value = it } //Needs to be tested, but it should update when an actual player is near
         Scaffold(
             floatingActionButton = {
                 SwitchPlayerNearbyBooleanButton(updateBoolean = {
@@ -97,6 +98,21 @@ class PlayerToPlayerInteraction : AppCompatActivity() {
             )
         }
     }
+
+    /*Once this function is uncommented in InterfaceScreen(), isPlayerNearby will update the screen
+    based on whether an actual player is nearby
+     */
+    private fun checkIsPlayerNearby(isPlayerNearbyValue: (Boolean) -> Unit){
+        isPlayerNearbyValue(isPlayerNearby)
+    }
+
+//    private fun endpointFound(updateBoolean: (Boolean) -> Unit) {
+//        updateBoolean(isPlayerNearby)
+//    }
+//
+//    private fun endpointLost(updateBoolean: (Boolean) -> Unit) {
+//        updateBoolean(isPlayerNearby)
+//    }
 
 
     /*The two functions below are for testing purposes. Screen is now updating, still need to

@@ -348,7 +348,9 @@ fun MenuScreen(navController: NavController) {
     }
 }
 
-
+/*Similar problem to InterfaceScreen(), the LobbyScreen() should update the PlayerList() with every
+player that joins.
+ */
 @Composable
 fun LobbyScreen(joinCode: String, navController: NavController) {
     isHost = true
