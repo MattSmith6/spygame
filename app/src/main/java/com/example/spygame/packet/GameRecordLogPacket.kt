@@ -9,21 +9,26 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.IOException;
 
-public class GameRecordLogPacket extends AbstractPacket {
+class GameRecordLogPacket(private val username: String,
+                          private val password: String,
+                          private val encryptionKey: PlayerEncryptionKey)
+    : AbstractPacket(0)  {
 
-    private static final int PACKET_ID = 31; //pick the number for the package
+    private PACKET_ID: int = 31; //pick the number for the package
     //variable info;
-    String invitationCode;
-    int currentPlayer;
-    int playerID;
+    var invitationCode: String;
+    var currentPlayer: int;
+    var playerID: int;
 
-    public ServerHandshakePacket() {
-        super(PACKET_ID);
-    }
 
-    @Override
-    public void process(PacketManager packetManager, PlayerEncryptionKey playerEncryptionKey,
-                        BufferedReader bufferedReader, BufferedWriter bufferedWriter) {
+
+        
+ 
+    override fun process(
+        playerEncryptionKey: PlayerEncryptionKey,
+        bufferedReader: BufferedReader,
+        printWriter: PrintWriter
+    ): JSONObject {
         try {
             // Read object from the reader, can read using #getInt, #getString, etc.
             JSONObject firstReadObject = readJSONObjectFromInput(playerEncryptionKey, bufferedReader);
