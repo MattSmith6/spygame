@@ -82,6 +82,9 @@ fun Navigation() {
                 serverConnectionHandler = serverConnectionHandler,
                 playerEncryptionKey = playerEncryptionKey)
         }
+        composable(route = Screen.ForgotPasswordPrompt.route) {
+            ForgotPasswordPrompt(navController = navController)
+        }
         composable(route = Screen.InterfaceScreen.route) {
             PlayerToPlayerInteraction().InterfaceScreen()
         }
@@ -119,7 +122,7 @@ fun LoginScreen(navController: NavController,
                 password = it
                 errorMessage = ""
             },
-            onForgotPassClick = { navController.navigate(Screen.ForgotPasswordScreen.route) }
+            onForgotPassClick = { navController.navigate(Screen.ForgotPasswordPrompt.route) }
         )
 
         LoginRegisterFooter(
