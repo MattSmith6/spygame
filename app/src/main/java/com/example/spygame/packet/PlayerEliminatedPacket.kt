@@ -7,7 +7,7 @@ import java.io.BufferedReader
 import java.io.IOException
 import java.io.PrintWriter
 
-class JoinGamePacket(private val code : String) : AbstractPacket(PACKET_ID) {
+class PlayerEliminatedPacket(var eliminatorID : Int) : AbstractPacket(PACKET_ID) {
 
     override fun process(
         playerEncryptionKey: PlayerEncryptionKey,
@@ -21,7 +21,8 @@ class JoinGamePacket(private val code : String) : AbstractPacket(PACKET_ID) {
 
             val objectToSend = JSONObject()
 
-            objectToSend.put("invite_code", code)
+            objectToSend.put("eliminator_id", eliminatorID);
+
             writeJSONObjectToOutput(playerEncryptionKey, objectToSend, printWriter)
 
             firstReadObject =
@@ -35,6 +36,6 @@ class JoinGamePacket(private val code : String) : AbstractPacket(PACKET_ID) {
     }
 
     companion object {
-        private const val PACKET_ID = 11
+        private const val PACKET_ID = 14
     }
 }
