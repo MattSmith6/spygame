@@ -4,7 +4,11 @@ import android.os.StrictMode
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.*
 import androidx.compose.material.icons.Icons
@@ -19,6 +23,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontStyle
@@ -45,7 +50,9 @@ import com.example.spygame.packet.PlayerHandshakePacket
 import com.example.spygame.packet.ServerConnectionHandler
 import java.util.regex.Pattern
 
-var isHost: Boolean = false
+private var isHost: Boolean = false /*Purpose of this is so only a player who is host can see and
+                                    use the StartGameButton() in the LobbyScreen(), might need to
+                                    change implementation of it for correct functionality.*/
 
 @Preview
 @Composable
@@ -107,11 +114,11 @@ fun LoginScreen(navController: NavController,
             onUsernameChange = {
                 username = it
                 errorMessage = ""
-                               },
+            },
             onPasswordChange = {
                 password = it
                 errorMessage = ""
-                               },
+            },
             onForgotPassClick = { navController.navigate(Screen.ForgotPasswordScreen.route) }
         )
 
@@ -131,8 +138,7 @@ fun LoginScreen(navController: NavController,
                             PlayerHandshakePacket(username, password, playerEncryptionKey)
 
                         // Send packet with callback with check on initialization
-                        serverConnectionHandler.sendPacket(handshakePacket) {
-                            jsonObject ->
+                        serverConnectionHandler.sendPacket(handshakePacket) { jsonObject ->
 
                             Log.i("NAVIGATION", "Sent packet, in callback")
 
@@ -190,11 +196,11 @@ fun RegisterScreen(navController: NavController) {
             onEmailChange = {
                 email = it
                 emailErrorMessage = ""
-                            },
+            },
             onUsernameChange = {
                 username = it
                 usernameErrorMessage = ""
-                               },
+            },
             onPasswordChange = {
                 password = it
                 passwordErrorMessage = ""
@@ -220,8 +226,7 @@ fun RegisterScreen(navController: NavController) {
                     usernameErrorMessage = "Usernames cannot contain any special characters."
                     validUsername = false
                 } else {
-                    CheckUsernameExistsRequest(username).createHttpRequest {
-                            jsonObject ->
+                    CheckUsernameExistsRequest(username).createHttpRequest { jsonObject ->
                         // If the object has the exists property (it should) and the username does not exist,
                         // we should set the error message when signing up
                         if (jsonObject?.has("exists") == true && !jsonObject.getBoolean("exists")) {
@@ -238,8 +243,11 @@ fun RegisterScreen(navController: NavController) {
                 }
 
                 if (validEmail && validUsername && validPassword) {
-                    RegisterAccountRequest(email, username, password).createHttpRequest {
-                            jsonObject ->
+                    RegisterAccountRequest(
+                        email,
+                        username,
+                        password
+                    ).createHttpRequest { jsonObject ->
                         if (jsonObject == null || jsonObject.has("error")) {
                             passwordErrorMessage = jsonObject?.getString("error").orEmpty()
                         } else {
@@ -249,7 +257,7 @@ fun RegisterScreen(navController: NavController) {
                         }
                     }
                 }
-                                },
+            },
             switchScreenTxt = "Already have an account?",
             onSwitchScreenClick = { navController.navigate(Screen.LoginScreen.route) },
             switchScreenTxtButton = "LOG IN"
@@ -274,20 +282,21 @@ fun ForgotPasswordPrompt(navController: NavController) {
             Text(
                 text = errorMessage,
 
-            )
+                )
 
             PasswordPromptField(
                 email = email,
                 onEmailChange = { email = it },
-                onSubmitClick = { ResetPasswordRequest(email).createHttpRequest {
-                    jsonObject ->
-                    if (jsonObject?.has("error") == true) {
+                onSubmitClick = {
+                    ResetPasswordRequest(email).createHttpRequest { jsonObject ->
+                        if (jsonObject?.has("error") == true) {
 
-                    } else {
-                        // TODO: ALERT USER TO CHECK EMAIL
-                        navController.navigate( Screen.LoginScreen.route );
+                        } else {
+                            // TODO: ALERT USER TO CHECK EMAIL
+                            navController.navigate(Screen.LoginScreen.route);
+                        }
                     }
-                } }
+                }
             )
         }
     }
@@ -350,7 +359,9 @@ fun MenuScreen(navController: NavController,
     }
 }
 
-
+/*Similar problem to InterfaceScreen(), the LobbyScreen() should update the PlayerList() with every
+player that joins.
+ */
 @Composable
 fun LobbyScreen(joinCode: String, navController: NavController,
                 serverConnectionHandler: ServerConnectionHandler,
@@ -362,37 +373,83 @@ fun LobbyScreen(joinCode: String, navController: NavController,
     /*the joinCode on the top of the page so it can be shared and*/
     /*it checks if the player isHost so it can display a button to*/
     /*start the game*/
-    Column(
-        modifier = Modifier.fillMaxSize(),
-        verticalArrangement = Arrangement.Center,
-        horizontalAlignment = Alignment.CenterHorizontally
-    ) {
-        Text(
-            text = "Game Lobby",
-            fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center,
-            fontSize = 30.sp,
-            fontWeight = FontWeight.Bold,
-            //color = MaterialTheme.colors.onBackground,
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 50.dp)
-        )
-        Text(
-            text = "Join Code: $joinCode", fontFamily = FontFamily.Monospace,
-            textAlign = TextAlign.Center, modifier = Modifier.padding(top = 10.dp)
-        )
-        Box(
-            modifier = Modifier
-                .fillMaxSize()
-                .padding(top = 50.dp)
-                .background(color = MaterialTheme.colors.onPrimary)
-        ) {
+    Scaffold(
+        floatingActionButton = {
             StartGameButton(onStartButtonClick = {
                 navController.navigate(Screen.InterfaceScreen.route)
                 /*Checks to see if the minimum amount of players
                 are in the lobby then starts game and switches to InterfaceScreen for all players*/
-            }
+            })
+        },
+        floatingActionButtonPosition = FabPosition.Center,
+    ) {
+        Column(
+            modifier = Modifier.fillMaxSize(),
+            verticalArrangement = Arrangement.Center,
+            horizontalAlignment = Alignment.CenterHorizontally
+        ) {
+            Text(
+                text = "Game Lobby",
+                fontFamily = FontFamily.Monospace,
+                textAlign = TextAlign.Center,
+                fontSize = 30.sp,
+                fontWeight = FontWeight.Bold,
+                //color = MaterialTheme.colors.onBackground,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 50.dp)
+            )
+            Spacer(modifier = Modifier.fillMaxWidth().height(20.dp))
+            Text(
+                text = "Join Code: $joinCode", fontFamily = FontFamily.Monospace,
+                textAlign = TextAlign.Center, modifier = Modifier.padding(top = 10.dp)
+            )
+            PlayerList()
+
+        }
+    }
+}
+
+//A list of players that are currently in the lobby. Still needs work to display player name
+@Preview
+@Composable
+fun PlayerList() {
+    LazyColumn() {
+        itemsIndexed(
+            //Place a list of players here
+            listOf(
+                "Troy",
+                "Matt",
+                "Mario",
+                "Dov",
+                "Rocket",
+                "Moose",
+                "Rex",
+                "Olive",
+                "Princess",
+                "Winnie",
+                "Chloe"
+            )
+        ) { index, playerName ->
+
+            val backgroundColor =
+                if (index % 2 == 0) {
+                    colorResource(id = R.color.purple_200)
+                } else {
+                    colorResource(id = R.color.purple_500)
+                }
+
+            Text(
+                text = playerName,
+                fontSize = 24.sp,
+                fontWeight = FontWeight.Bold,
+                textAlign = TextAlign.Center,
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .height(75.dp)
+                    .padding(14.dp)
+                    .border(1.dp, Color.DarkGray, RoundedCornerShape(4.dp))
+                    .background(backgroundColor)
             )
         }
     }
