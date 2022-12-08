@@ -59,9 +59,13 @@ private var isHost: Boolean = false /*Purpose of this is so only a player who is
 fun Navigation() {
     StrictMode.enableDefaults();
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = Screen.LobbyScreen.route) {
+    val serverConnectionHandler by remember { mutableStateOf(ServerConnectionHandler()) }
+    val playerEncryptionKey by remember { mutableStateOf(PlayerEncryptionKey()) }
+    NavHost(navController = navController, startDestination = Screen.LoginScreen.route) {
         composable(route = Screen.LoginScreen.route) {
-            LoginScreen(navController = navController)
+            LoginScreen(navController = navController,
+                serverConnectionHandler = serverConnectionHandler,
+                playerEncryptionKey = playerEncryptionKey)
         }
         composable(route = Screen.RegisterScreen.route) {
             RegisterScreen(navController = navController)
@@ -69,10 +73,14 @@ fun Navigation() {
         composable(route = Screen.LobbyScreen.route) {
             /*Join code and max players don't NEED to be used here but are here just to test if the
             check if the screen behaves properly*/
-            LobbyScreen(joinCode = "ABCD", navController = navController)
+            LobbyScreen(joinCode = "ABCD", navController = navController,
+                serverConnectionHandler = serverConnectionHandler,
+                playerEncryptionKey = playerEncryptionKey)
         }
         composable(route = Screen.MenuScreen.route) {
-            MenuScreen(navController = navController)
+            MenuScreen(navController = navController,
+                serverConnectionHandler = serverConnectionHandler,
+                playerEncryptionKey = playerEncryptionKey)
         }
         composable(route = Screen.InterfaceScreen.route) {
             PlayerToPlayerInteraction().InterfaceScreen()
@@ -81,12 +89,12 @@ fun Navigation() {
 }
 
 @Composable
-fun LoginScreen(navController: NavController) {
+fun LoginScreen(navController: NavController,
+                serverConnectionHandler: ServerConnectionHandler,
+                playerEncryptionKey: PlayerEncryptionKey
+) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
-
-    val serverConnectionHandler by remember { mutableStateOf(ServerConnectionHandler()) }
-    val playerEncryptionKey by remember { mutableStateOf(PlayerEncryptionKey()) }
 
     var errorMessage by remember { mutableStateOf("") }
 
@@ -296,7 +304,10 @@ fun ForgotPasswordPrompt(navController: NavController) {
 
 
 @Composable
-fun MenuScreen(navController: NavController) {
+fun MenuScreen(navController: NavController,
+               serverConnectionHandler: ServerConnectionHandler,
+               playerEncryptionKey: PlayerEncryptionKey
+) {
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -352,7 +363,10 @@ fun MenuScreen(navController: NavController) {
 player that joins.
  */
 @Composable
-fun LobbyScreen(joinCode: String, navController: NavController) {
+fun LobbyScreen(joinCode: String, navController: NavController,
+                serverConnectionHandler: ServerConnectionHandler,
+                playerEncryptionKey: PlayerEncryptionKey
+) {
     isHost = true
     /*These will need to be changed. I just placed this data for*/
     /*testing purposes. The goal of these variables is to display*/
