@@ -60,12 +60,10 @@ fun Navigation() {
     StrictMode.enableDefaults();
     val navController = rememberNavController()
     val serverConnectionHandler by remember { mutableStateOf(ServerConnectionHandler()) }
-    val playerEncryptionKey by remember { mutableStateOf(PlayerEncryptionKey()) }
     NavHost(navController = navController, startDestination = Screen.LoginScreen.route) {
         composable(route = Screen.LoginScreen.route) {
             LoginScreen(navController = navController,
-                serverConnectionHandler = serverConnectionHandler,
-                playerEncryptionKey = playerEncryptionKey)
+                serverConnectionHandler = serverConnectionHandler)
         }
         composable(route = Screen.RegisterScreen.route) {
             RegisterScreen(navController = navController)
@@ -74,13 +72,14 @@ fun Navigation() {
             /*Join code and max players don't NEED to be used here but are here just to test if the
             check if the screen behaves properly*/
             LobbyScreen(joinCode = "ABCD", navController = navController,
-                serverConnectionHandler = serverConnectionHandler,
-                playerEncryptionKey = playerEncryptionKey)
+                serverConnectionHandler = serverConnectionHandler)
         }
         composable(route = Screen.MenuScreen.route) {
             MenuScreen(navController = navController,
-                serverConnectionHandler = serverConnectionHandler,
-                playerEncryptionKey = playerEncryptionKey)
+                serverConnectionHandler = serverConnectionHandler)
+        }
+        composable(route = Screen.ForgotPasswordPrompt.route) {
+            ForgotPasswordPrompt(navController = navController)
         }
         composable(route = Screen.InterfaceScreen.route) {
             PlayerToPlayerInteraction().InterfaceScreen()
@@ -90,8 +89,7 @@ fun Navigation() {
 
 @Composable
 fun LoginScreen(navController: NavController,
-                serverConnectionHandler: ServerConnectionHandler,
-                playerEncryptionKey: PlayerEncryptionKey
+                serverConnectionHandler: ServerConnectionHandler
 ) {
     var username by remember { mutableStateOf("") }
     var password by remember { mutableStateOf("") }
@@ -119,7 +117,7 @@ fun LoginScreen(navController: NavController,
                 password = it
                 errorMessage = ""
             },
-            onForgotPassClick = { navController.navigate(Screen.ForgotPasswordScreen.route) }
+            onForgotPassClick = { navController.navigate(Screen.ForgotPasswordPrompt.route) }
         )
 
         LoginRegisterFooter(
@@ -135,7 +133,7 @@ fun LoginScreen(navController: NavController,
                         Log.i("NAVIGATION", "Connection opened successfully")
 
                         val handshakePacket =
-                            PlayerHandshakePacket(username, password, playerEncryptionKey)
+                            PlayerHandshakePacket(username, password, serverConnectionHandler.getEncryptionKey())
 
                         // Send packet with callback with check on initialization
                         serverConnectionHandler.sendPacket(handshakePacket) { jsonObject ->
@@ -290,7 +288,7 @@ fun ForgotPasswordPrompt(navController: NavController) {
                 onSubmitClick = {
                     ResetPasswordRequest(email).createHttpRequest { jsonObject ->
                         if (jsonObject?.has("error") == true) {
-
+                            Log.e("error", jsonObject.getString("error"))
                         } else {
                             // TODO: ALERT USER TO CHECK EMAIL
                             navController.navigate(Screen.LoginScreen.route);
@@ -305,8 +303,7 @@ fun ForgotPasswordPrompt(navController: NavController) {
 
 @Composable
 fun MenuScreen(navController: NavController,
-               serverConnectionHandler: ServerConnectionHandler,
-               playerEncryptionKey: PlayerEncryptionKey
+               serverConnectionHandler: ServerConnectionHandler
 ) {
     Column(
         modifier = Modifier
@@ -364,8 +361,7 @@ player that joins.
  */
 @Composable
 fun LobbyScreen(joinCode: String, navController: NavController,
-                serverConnectionHandler: ServerConnectionHandler,
-                playerEncryptionKey: PlayerEncryptionKey
+                serverConnectionHandler: ServerConnectionHandler
 ) {
     isHost = true
     /*These will need to be changed. I just placed this data for*/
@@ -399,7 +395,9 @@ fun LobbyScreen(joinCode: String, navController: NavController,
                     .fillMaxWidth()
                     .padding(top = 50.dp)
             )
-            Spacer(modifier = Modifier.fillMaxWidth().height(20.dp))
+            Spacer(modifier = Modifier
+                .fillMaxWidth()
+                .height(20.dp))
             Text(
                 text = "Join Code: $joinCode", fontFamily = FontFamily.Monospace,
                 textAlign = TextAlign.Center, modifier = Modifier.padding(top = 10.dp)
@@ -601,7 +599,7 @@ fun ColumnScope.PasswordPromptField(
     )
 
     OutlinedButton(
-        onClick = { onSubmitClick }, modifier = Modifier
+        onClick = onSubmitClick, modifier = Modifier
             .fillMaxWidth()
             .padding(bottom = 10.dp, top = 10.dp)
     ) {

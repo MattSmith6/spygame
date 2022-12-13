@@ -39,6 +39,10 @@ class ServerConnectionHandler {
         return socket?.isClosed == false
     }
 
+    fun getEncryptionKey(): PlayerEncryptionKey {
+        return encryptionKey
+    }
+
     fun sendPacket(packet: AbstractPacket, callback: Consumer<JSONObject>): Boolean {
         Log.i(LOGGER_NAME, "In send packet method");
 
