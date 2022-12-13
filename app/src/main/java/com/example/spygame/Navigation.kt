@@ -81,6 +81,9 @@ fun Navigation() {
         composable(route = Screen.ForgotPasswordPrompt.route) {
             ForgotPasswordPrompt(navController = navController)
         }
+        composable(route = Screen.ForgotPasswordPrompt.route) {
+            ForgotPasswordPrompt(navController = navController)
+        }
         composable(route = Screen.InterfaceScreen.route) {
             PlayerToPlayerInteraction().InterfaceScreen()
         }
